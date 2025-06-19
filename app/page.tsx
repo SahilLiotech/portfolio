@@ -40,6 +40,7 @@ import {
   Loader2,
 } from "lucide-react"
 
+
 // Hook to detect mobile devices - more specific detection
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false)
