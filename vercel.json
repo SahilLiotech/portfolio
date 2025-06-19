@@ -8,8 +8,10 @@
       "maxDuration": 10
     }
   },
-  "regions": ["iad1"],
+  "regions": [
+    "iad1"
+  ],
   "env": {
-    "RESEND_API_KEY": "@resend_api_key"
+    "RESEND_API_KEY": "RESEND_API_KEY"
   }
 }
