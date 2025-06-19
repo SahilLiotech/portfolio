@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Github,
   Linkedin,
@@ -38,34 +44,33 @@ import {
   Heart,
   Coffee,
   Loader2,
-} from "lucide-react"
-
+} from "lucide-react";
 
 // Hook to detect mobile devices - more specific detection
 const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkIsMobile = () => {
       // More specific mobile detection - only phones, not tablets
-      setIsMobile(window.innerWidth < 640) // sm breakpoint
-    }
+      setIsMobile(window.innerWidth < 640); // sm breakpoint
+    };
 
-    checkIsMobile()
-    window.addEventListener("resize", checkIsMobile)
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
 
-    return () => window.removeEventListener("resize", checkIsMobile)
-  }, [])
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
 
-  return isMobile
-}
+  return isMobile;
+};
 
 // Completely remove animations for mobile
 const FloatingShapes = () => {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   // No animations at all on mobile
-  if (isMobile) return null
+  if (isMobile) return null;
 
   // Full animations for desktop/tablet
   return (
@@ -98,14 +103,14 @@ const FloatingShapes = () => {
         />
       ))}
     </div>
-  )
-}
+  );
+};
 
 // Remove grid animation for mobile
 const AnimatedGrid = () => {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
-  if (isMobile) return null // Completely disabled on mobile
+  if (isMobile) return null; // Completely disabled on mobile
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-30">
@@ -121,14 +126,14 @@ const AnimatedGrid = () => {
         }}
       ></div>
     </div>
-  )
-}
+  );
+};
 
 // Remove particle system for mobile
 const ParticleSystem = () => {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
-  if (isMobile) return null // Completely disabled on mobile
+  if (isMobile) return null; // Completely disabled on mobile
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -145,14 +150,14 @@ const ParticleSystem = () => {
         />
       ))}
     </div>
-  )
-}
+  );
+};
 
 // Remove gradient orbs for mobile
 const GradientOrbs = () => {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
-  if (isMobile) return null // Completely disabled on mobile
+  if (isMobile) return null; // Completely disabled on mobile
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -161,58 +166,60 @@ const GradientOrbs = () => {
       <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-gradient-to-r from-green-400/10 to-teal-400/10 rounded-full blur-3xl animate-drift-3"></div>
       <div className="absolute top-1/4 left-1/2 w-64 h-64 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 rounded-full blur-3xl animate-drift-4"></div>
     </div>
-  )
-}
+  );
+};
 
 // Simplified intersection observer - no animations on mobile
 const useIntersectionObserver = (options = {}) => {
-  const [isIntersecting, setIsIntersecting] = useState(false)
-  const ref = useRef(null)
-  const isMobile = useIsMobile()
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const ref = useRef(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // On mobile, immediately set to intersecting (no animation delays)
     if (isMobile) {
-      setIsIntersecting(true)
-      return
+      setIsIntersecting(true);
+      return;
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsIntersecting(entry.isIntersecting)
+        setIsIntersecting(entry.isIntersecting);
       },
       {
         threshold: 0.1,
         rootMargin: "50px",
         ...options,
-      },
-    )
+      }
+    );
 
     if (ref.current) {
-      observer.observe(ref.current)
+      observer.observe(ref.current);
     }
 
     return () => {
       if (ref.current) {
-        observer.unobserve(ref.current)
+        observer.unobserve(ref.current);
       }
-    }
-  }, [options, isMobile])
+    };
+  }, [options, isMobile]);
 
-  return [ref, isIntersecting]
-}
+  return [ref, isIntersecting];
+};
 
 // No animations on mobile - instant display
 const AnimatedSection = ({ children, className = "", delay = 0 }) => {
   const [ref, isIntersecting] = useIntersectionObserver({
     threshold: 0.1,
     rootMargin: "50px",
-  })
-  const isMobile = useIsMobile()
+  });
+  const isMobile = useIsMobile();
 
   // On mobile, no animations - just show content immediately
   if (isMobile) {
-    return <div className={`opacity-100 translate-y-0 ${className}`}>{children}</div>
+    return (
+      <div className={`opacity-100 translate-y-0 ${className}`}>{children}</div>
+    );
   }
 
   // Desktop/tablet animations
@@ -226,66 +233,83 @@ const AnimatedSection = ({ children, className = "", delay = 0 }) => {
     >
       {children}
     </div>
-  )
-}
+  );
+};
 
 export default function Portfolio() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState("home")
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [scrollY, setScrollY] = useState(0)
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle")
-  const isMobile = useIsMobile()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Instant loading for mobile, animated for desktop
     const timer = setTimeout(
       () => {
-        setIsLoaded(true)
+        setIsLoaded(true);
       },
-      isMobile ? 0 : 500, // Instant for mobile
-    )
+      isMobile ? 0 : 500 // Instant for mobile
+    );
 
     const handleScroll = () => {
-      setScrollY(window.scrollY)
-      const sections = ["home", "about", "experience", "skills", "projects", "education", "contact"]
-      const scrollPosition = window.scrollY + 100
+      setScrollY(window.scrollY);
+      const sections = [
+        "home",
+        "about",
+        "experience",
+        "skills",
+        "projects",
+        "education",
+        "contact",
+      ];
+      const scrollPosition = window.scrollY + 100;
 
       for (const section of sections) {
-        const element = document.getElementById(section)
+        const element = document.getElementById(section);
         if (element) {
-          const offsetTop = element.offsetTop
-          const offsetHeight = element.offsetHeight
+          const offsetTop = element.offsetTop;
+          const offsetHeight = element.offsetHeight;
 
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(section)
-            break
+          if (
+            scrollPosition >= offsetTop &&
+            scrollPosition < offsetTop + offsetHeight
+          ) {
+            setActiveSection(section);
+            break;
           }
         }
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener("scroll", handleScroll)
-      clearTimeout(timer)
-    }
-  }, [isMobile])
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timer);
+    };
+  }, [isMobile]);
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
+    const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
+      element.scrollIntoView({ behavior: "smooth" });
     }
-    setMobileMenuOpen(false)
-  }
+    setMobileMenuOpen(false);
+  };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setSubmitStatus("idle")
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus("idle");
 
     try {
       const response = await fetch("/api/contact", {
@@ -294,27 +318,29 @@ export default function Portfolio() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
 
       if (response.ok) {
-        setSubmitStatus("success")
-        setFormData({ name: "", email: "", message: "" })
+        setSubmitStatus("success");
+        setFormData({ name: "", email: "", message: "" });
       } else {
-        setSubmitStatus("error")
+        setSubmitStatus("error");
       }
     } catch (error) {
-      setSubmitStatus("error")
+      setSubmitStatus("error");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }))
-  }
+    }));
+  };
 
   const skills = {
     "Mobile Development": {
@@ -342,7 +368,7 @@ export default function Portfolio() {
       icon: Award,
       gradient: "from-pink-500 to-rose-500",
     },
-  }
+  };
 
   const experiences = [
     {
@@ -370,7 +396,7 @@ export default function Portfolio() {
       ],
       gradient: "from-emerald-600 to-teal-600",
     },
-  ]
+  ];
 
   const projects = [
     {
@@ -379,7 +405,12 @@ export default function Portfolio() {
       technologies: ["Flutter", "Provider", "API Integration", "Hive"],
       description:
         "Developed and optimized the POS system for restaurant management with seamless order processing and payment handling.",
-      features: ["Local data storage with Hive", "Provider state management", "API integrations", "Payment processing"],
+      features: [
+        "Local data storage with Hive",
+        "Provider state management",
+        "API integrations",
+        "Payment processing",
+      ],
       link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow.pos&pcampaignid=web_share",
       linkType: "playstore",
       gradient: "from-blue-500 to-indigo-600",
@@ -388,8 +419,13 @@ export default function Portfolio() {
       title: "FoodChow Customer App",
       type: "Professional",
       technologies: ["Flutter", "Provider", "API Integration"],
-      description: "Contributed to UI enhancements for customer-facing restaurant application.",
-      features: ["Enhanced UI/UX", "Customer order management", "Real-time updates"],
+      description:
+        "Contributed to UI enhancements for customer-facing restaurant application.",
+      features: [
+        "Enhanced UI/UX",
+        "Customer order management",
+        "Real-time updates",
+      ],
       link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow&pcampaignid=web_share",
       linkType: "playstore",
       gradient: "from-green-500 to-teal-600",
@@ -398,8 +434,13 @@ export default function Portfolio() {
       title: "FoodChow KDS",
       type: "Professional",
       technologies: ["Flutter", "GetX", "API Integration"],
-      description: "Enhanced kitchen display system with improved UI and new functionalities.",
-      features: ["Kitchen order management", "Real-time order tracking", "Performance optimization"],
+      description:
+        "Enhanced kitchen display system with improved UI and new functionalities.",
+      features: [
+        "Kitchen order management",
+        "Real-time order tracking",
+        "Performance optimization",
+      ],
       link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow.kds&pcampaignid=web_share",
       linkType: "playstore",
       gradient: "from-purple-500 to-pink-600",
@@ -408,7 +449,8 @@ export default function Portfolio() {
       title: "AutoMob",
       type: "Academic",
       technologies: ["PHP", "MySQL"],
-      description: "Vehicle buying platform for bikes, scooters, cars, and EVs with comprehensive vehicle details.",
+      description:
+        "Vehicle buying platform for bikes, scooters, cars, and EVs with comprehensive vehicle details.",
       features: ["Vehicle categorization", "Contact system", "Admin panel"],
       link: "https://github.com/SahilLiotech/AutoMob",
       linkType: "github",
@@ -418,13 +460,18 @@ export default function Portfolio() {
       title: "MoneyMate",
       type: "Academic",
       technologies: ["Android (Kotlin)", "SQLite"],
-      description: "Dummy banking app with local data management and comprehensive banking features.",
-      features: ["User authentication", "Fund transfer simulation", "Transaction history"],
+      description:
+        "Dummy banking app with local data management and comprehensive banking features.",
+      features: [
+        "User authentication",
+        "Fund transfer simulation",
+        "Transaction history",
+      ],
       link: null,
       linkType: null,
       gradient: "from-cyan-500 to-blue-600",
     },
-  ]
+  ];
 
   const education = [
     {
@@ -448,7 +495,7 @@ export default function Portfolio() {
       status: "Completed",
       grade: "First Class",
     },
-  ]
+  ];
 
   const achievements = [
     {
@@ -479,7 +526,7 @@ export default function Portfolio() {
       color: "text-orange-600",
       bg: "bg-orange-50",
     },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative">
@@ -498,7 +545,9 @@ export default function Portfolio() {
               <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
               <div className="absolute w-16 h-16 border-4 border-transparent border-r-purple-600 rounded-full animate-spin animation-delay-150"></div>
             </div>
-            <p className="text-gray-600 font-medium mt-4">Loading Portfolio...</p>
+            <p className="text-gray-600 font-medium mt-4">
+              Loading Portfolio...
+            </p>
           </div>
         </div>
       )}
@@ -524,7 +573,15 @@ export default function Portfolio() {
             {/* Desktop Navigation */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-1">
-                {["home", "about", "experience", "skills", "projects", "education", "contact"].map((item, index) => (
+                {[
+                  "home",
+                  "about",
+                  "experience",
+                  "skills",
+                  "projects",
+                  "education",
+                  "contact",
+                ].map((item, index) => (
                   <button
                     key={item}
                     onClick={() => scrollToSection(item)}
@@ -535,7 +592,9 @@ export default function Portfolio() {
                     }`}
                     style={{
                       animationDelay: `${index * 100}ms`,
-                      animation: isLoaded ? "fadeInDown 0.6s ease-out forwards" : "none",
+                      animation: isLoaded
+                        ? "fadeInDown 0.6s ease-out forwards"
+                        : "none",
                     }}
                   >
                     {item.charAt(0).toUpperCase() + item.slice(1)}
@@ -552,7 +611,11 @@ export default function Portfolio() {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 hover:bg-white/50 backdrop-blur-sm rounded-full"
               >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {mobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </Button>
             </div>
           </div>
@@ -565,7 +628,15 @@ export default function Portfolio() {
           } overflow-hidden`}
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/90 backdrop-blur-xl border-t border-gray-200/50">
-            {["home", "about", "experience", "skills", "projects", "education", "contact"].map((item) => (
+            {[
+              "home",
+              "about",
+              "experience",
+              "skills",
+              "projects",
+              "education",
+              "contact",
+            ].map((item) => (
               <button
                 key={item}
                 onClick={() => scrollToSection(item)}
@@ -583,7 +654,10 @@ export default function Portfolio() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-16 min-h-screen flex items-center relative overflow-hidden">
+      <section
+        id="home"
+        className="pt-16 min-h-screen flex items-center relative overflow-hidden"
+      >
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
@@ -608,7 +682,7 @@ export default function Portfolio() {
                   <img
                     src="/profile-image.jpg"
                     alt="Sahil Pathan - Flutter Developer"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-fit: cover" // Add object-fit: cover
                   />
                 </div>
               </div>
@@ -646,8 +720,10 @@ export default function Portfolio() {
               className={`${isMobile ? "opacity-100 translate-y-0" : `transition-all duration-1000 delay-800 ${isLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}`}
             >
               <p className="text-base sm:text-lg text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed px-4">
-                🚀 Passionate Flutter Developer crafting high-performance mobile applications with clean architecture
-                and modern design principles. Specialized in POS and KDS systems with 1+ years of hands-on experience.
+                🚀 Passionate Flutter Developer crafting high-performance mobile
+                applications with clean architecture and modern design
+                principles. Specialized in POS and KDS systems with 1+ years of
+                hands-on experience.
               </p>
             </div>
 
@@ -714,14 +790,19 @@ export default function Portfolio() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-12 sm:py-20 bg-white/50 backdrop-blur-sm">
+      <section
+        id="about"
+        className="py-12 sm:py-20 bg-white/50 backdrop-blur-sm"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent mb-4">
                 About Me
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">Passionate developer crafting digital experiences</p>
+              <p className="text-base sm:text-lg text-gray-600">
+                Passionate developer crafting digital experiences
+              </p>
             </div>
           </AnimatedSection>
 
@@ -741,24 +822,36 @@ export default function Portfolio() {
                 </CardHeader>
                 <CardContent className="space-y-4 sm:space-y-6">
                   <p className="text-gray-600 leading-relaxed text-base sm:text-lg">
-                    🎯 I'm a passionate Flutter developer with expertise in building high-performance mobile
-                    applications. Currently working in a product-based company, I specialize in POS and KDS systems,
-                    with strong skills in state management, API integration, and local storage solutions.
+                    🎯 I'm a passionate Flutter developer with expertise in
+                    building high-performance mobile applications. Currently
+                    working in a product-based company, I specialize in POS and
+                    KDS systems, with strong skills in state management, API
+                    integration, and local storage solutions.
                   </p>
                   <p className="text-gray-600 leading-relaxed text-base sm:text-lg">
-                    💡 My experience includes working with various state management solutions like BLoC, Provider, GetX,
-                    and Riverpod, along with Firebase services, SQLite, and Google AdMob integration. I'm committed to
-                    writing clean, efficient code and following best practices in mobile app development.
+                    💡 My experience includes working with various state
+                    management solutions like BLoC, Provider, GetX, and
+                    Riverpod, along with Firebase services, SQLite, and Google
+                    AdMob integration. I'm committed to writing clean, efficient
+                    code and following best practices in mobile app development.
                   </p>
 
                   <div className="grid grid-cols-2 gap-4 sm:gap-6 mt-6 sm:mt-8">
                     <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl text-white transform hover:scale-105 transition-all duration-300 shadow-lg">
-                      <div className="text-3xl sm:text-4xl font-bold mb-2">1+</div>
-                      <div className="text-xs sm:text-sm opacity-90">Years Experience</div>
+                      <div className="text-3xl sm:text-4xl font-bold mb-2">
+                        1+
+                      </div>
+                      <div className="text-xs sm:text-sm opacity-90">
+                        Years Experience
+                      </div>
                     </div>
                     <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl text-white transform hover:scale-105 transition-all duration-300 shadow-lg">
-                      <div className="text-3xl sm:text-4xl font-bold mb-2">5+</div>
-                      <div className="text-xs sm:text-sm opacity-90">Projects Completed</div>
+                      <div className="text-3xl sm:text-4xl font-bold mb-2">
+                        5+
+                      </div>
+                      <div className="text-xs sm:text-sm opacity-90">
+                        Projects Completed
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -781,9 +874,11 @@ export default function Portfolio() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                      🎯 Aspiring to leverage my expertise in Flutter development to build high-performance, scalable,
-                      and user-friendly mobile applications. Seeking opportunities to contribute innovative solutions
-                      while continuously enhancing my skills.
+                      🎯 Aspiring to leverage my expertise in Flutter
+                      development to build high-performance, scalable, and
+                      user-friendly mobile applications. Seeking opportunities
+                      to contribute innovative solutions while continuously
+                      enhancing my skills.
                     </p>
                   </CardContent>
                 </Card>
@@ -812,8 +907,12 @@ export default function Portfolio() {
                             className={`w-4 h-4 sm:w-5 sm:h-5 mt-0.5 flex-shrink-0 ${achievement.color}`}
                           />
                           <div>
-                            <div className="font-medium text-gray-900 text-xs sm:text-sm">{achievement.title}</div>
-                            <div className="text-gray-600 text-xs">{achievement.desc}</div>
+                            <div className="font-medium text-gray-900 text-xs sm:text-sm">
+                              {achievement.title}
+                            </div>
+                            <div className="text-gray-600 text-xs">
+                              {achievement.desc}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -827,14 +926,19 @@ export default function Portfolio() {
       </section>
 
       {/* Experience Section */}
-      <section id="experience" className="py-12 sm:py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+      <section
+        id="experience"
+        className="py-12 sm:py-20 bg-gradient-to-br from-slate-50 to-blue-50"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent mb-4">
                 Professional Experience
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">My journey in Flutter development</p>
+              <p className="text-base sm:text-lg text-gray-600">
+                My journey in Flutter development
+              </p>
             </div>
           </AnimatedSection>
 
@@ -844,7 +948,9 @@ export default function Portfolio() {
                 <Card
                   className={`overflow-hidden ${!isMobile && "hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3"} border-0 group`}
                 >
-                  <CardHeader className={`bg-gradient-to-r ${exp.gradient} text-white relative overflow-hidden`}>
+                  <CardHeader
+                    className={`bg-gradient-to-r ${exp.gradient} text-white relative overflow-hidden`}
+                  >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-700"></div>
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12 group-hover:scale-150 transition-transform duration-700"></div>
                     <div className="relative z-10">
@@ -889,20 +995,25 @@ export default function Portfolio() {
       </section>
 
       {/* Skills Section */}
-      <section id="skills" className="py-12 sm:py-20 bg-white/50 backdrop-blur-sm">
+      <section
+        id="skills"
+        className="py-12 sm:py-20 bg-white/50 backdrop-blur-sm"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent mb-4">
                 Technical Skills
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">Technologies and tools I master</p>
+              <p className="text-base sm:text-lg text-gray-600">
+                Technologies and tools I master
+              </p>
             </div>
           </AnimatedSection>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {Object.entries(skills).map(([category, data], index) => {
-              const IconComponent = data.icon
+              const IconComponent = data.icon;
 
               return (
                 <AnimatedSection key={index} delay={index * 150}>
@@ -937,14 +1048,17 @@ export default function Portfolio() {
                     </CardContent>
                   </Card>
                 </AnimatedSection>
-              )
+              );
             })}
           </div>
         </div>
       </section>
 
       {/* Projects Section */}
-      <section id="projects" className="py-12 sm:py-20 bg-gradient-to-br from-slate-50 to-purple-50">
+      <section
+        id="projects"
+        className="py-12 sm:py-20 bg-gradient-to-br from-slate-50 to-purple-50"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center mb-12 sm:mb-16">
@@ -968,16 +1082,24 @@ export default function Portfolio() {
                       className={`absolute inset-0 bg-gradient-to-r ${project.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
                     ></div>
                     <div className="flex items-start justify-between mb-3 relative z-10">
-                      <CardTitle className="text-lg sm:text-xl text-gray-900 flex-1 pr-3">{project.title}</CardTitle>
+                      <CardTitle className="text-lg sm:text-xl text-gray-900 flex-1 pr-3">
+                        {project.title}
+                      </CardTitle>
                       <Badge
-                        variant={project.type === "Professional" ? "default" : "secondary"}
+                        variant={
+                          project.type === "Professional"
+                            ? "default"
+                            : "secondary"
+                        }
                         className={
                           project.type === "Professional"
                             ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md flex-shrink-0 text-xs"
                             : "bg-gray-100 text-gray-700 flex-shrink-0 text-xs"
                         }
                       >
-                        {project.type === "Professional" ? "🚀 Professional" : "🎓 Academic"}
+                        {project.type === "Professional"
+                          ? "🚀 Professional"
+                          : "🎓 Academic"}
                       </Badge>
                     </div>
                     <CardDescription className="text-sm leading-relaxed text-gray-600 relative z-10 min-h-[3rem]">
@@ -1025,7 +1147,11 @@ export default function Portfolio() {
                           className={`w-full bg-gradient-to-r ${project.gradient} hover:shadow-lg transition-all duration-300 transform hover:scale-105 text-white text-sm`}
                           asChild
                         >
-                          <a href={project.link} target="_blank" rel="noopener noreferrer">
+                          <a
+                            href={project.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             {project.linkType === "playstore" ? (
                               <>
                                 <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
@@ -1046,7 +1172,9 @@ export default function Portfolio() {
                     {!project.link && (
                       <div className="mt-auto pt-4">
                         <div className="w-full p-3 bg-gray-100 rounded-lg text-center">
-                          <span className="text-gray-500 text-sm">Private Project</span>
+                          <span className="text-gray-500 text-sm">
+                            Private Project
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1059,14 +1187,19 @@ export default function Portfolio() {
       </section>
 
       {/* Education Section */}
-      <section id="education" className="py-12 sm:py-20 bg-white/50 backdrop-blur-sm">
+      <section
+        id="education"
+        className="py-12 sm:py-20 bg-white/50 backdrop-blur-sm"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent mb-4">
                 Education
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">My academic journey and achievements</p>
+              <p className="text-base sm:text-lg text-gray-600">
+                My academic journey and achievements
+              </p>
             </div>
           </AnimatedSection>
 
@@ -1091,8 +1224,12 @@ export default function Portfolio() {
                               <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </div>
                             <div>
-                              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{edu.degree}</h3>
-                              <p className="text-gray-600 mb-3 text-base sm:text-lg">{edu.institution}</p>
+                              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+                                {edu.degree}
+                              </h3>
+                              <p className="text-gray-600 mb-3 text-base sm:text-lg">
+                                {edu.institution}
+                              </p>
                               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                                 <Badge
                                   variant="outline"
@@ -1111,7 +1248,9 @@ export default function Portfolio() {
                           </div>
                           <div className="flex items-center text-gray-500 mt-4 lg:mt-0 bg-gradient-to-r from-gray-50 to-blue-50 px-3 sm:px-4 py-2 rounded-full border border-gray-200 w-fit">
                             <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                            <span className="font-medium text-sm sm:text-base">{edu.period}</span>
+                            <span className="font-medium text-sm sm:text-base">
+                              {edu.period}
+                            </span>
                           </div>
                         </div>
                       </CardContent>
@@ -1136,21 +1275,27 @@ export default function Portfolio() {
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent mb-4">
                 Let's Connect
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">Ready to discuss opportunities and collaborations</p>
+              <p className="text-base sm:text-lg text-gray-600">
+                Ready to discuss opportunities and collaborations
+              </p>
             </div>
           </AnimatedSection>
 
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
             <AnimatedSection delay={200}>
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8">Get In Touch</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8">
+                  Get In Touch
+                </h3>
                 <div className="space-y-4 sm:space-y-6">
                   <div className="flex items-center p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-white/20">
                     <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl mr-4 sm:mr-6 shadow-lg flex-shrink-0">
                       <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-gray-900 text-base sm:text-lg">Email</p>
+                      <p className="font-bold text-gray-900 text-base sm:text-lg">
+                        Email
+                      </p>
                       <a
                         href="mailto:pathansahil1800@gmail.com"
                         className="text-blue-600 hover:text-blue-800 transition-colors duration-200 text-sm sm:text-lg break-all"
@@ -1165,7 +1310,9 @@ export default function Portfolio() {
                       <Phone className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-gray-900 text-base sm:text-lg">Phone</p>
+                      <p className="font-bold text-gray-900 text-base sm:text-lg">
+                        Phone
+                      </p>
                       <a
                         href="tel:+917874443558"
                         className="text-blue-600 hover:text-blue-800 transition-colors duration-200 text-sm sm:text-lg"
@@ -1180,21 +1327,31 @@ export default function Portfolio() {
                       <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-gray-900 text-base sm:text-lg">Location</p>
-                      <p className="text-gray-600 text-sm sm:text-lg">Surat, Gujarat, India</p>
+                      <p className="font-bold text-gray-900 text-base sm:text-lg">
+                        Location
+                      </p>
+                      <p className="text-gray-600 text-sm sm:text-lg">
+                        Surat, Gujarat, India
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-8 sm:mt-10">
-                  <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Connect With Me</h4>
+                  <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">
+                    Connect With Me
+                  </h4>
                   <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                     <Button
                       size={isMobile ? "default" : "lg"}
                       className="flex items-center bg-gray-900 hover:bg-gray-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto justify-center"
                       asChild
                     >
-                      <a href="https://github.com/SahilLiotech/" target="_blank" rel="noopener noreferrer">
+                      <a
+                        href="https://github.com/SahilLiotech/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <Github className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                         GitHub
                       </a>
@@ -1221,15 +1378,24 @@ export default function Portfolio() {
             <AnimatedSection delay={400}>
               <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm">
                 <CardHeader className="p-4 sm:p-6">
-                  <CardTitle className="text-xl sm:text-2xl">Send a Message</CardTitle>
+                  <CardTitle className="text-xl sm:text-2xl">
+                    Send a Message
+                  </CardTitle>
                   <CardDescription className="text-base sm:text-lg">
-                    I'd love to hear from you. Send me a message and I'll respond as soon as possible.
+                    I'd love to hear from you. Send me a message and I'll
+                    respond as soon as possible.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6">
-                  <form onSubmit={handleFormSubmit} className="space-y-4 sm:space-y-6">
+                  <form
+                    onSubmit={handleFormSubmit}
+                    className="space-y-4 sm:space-y-6"
+                  >
                     <div>
-                      <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-2">
+                      <label
+                        htmlFor="name"
+                        className="block text-sm font-bold text-gray-700 mb-2"
+                      >
                         Name
                       </label>
                       <input
@@ -1245,7 +1411,10 @@ export default function Portfolio() {
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-2">
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-bold text-gray-700 mb-2"
+                      >
                         Email
                       </label>
                       <input
@@ -1261,7 +1430,10 @@ export default function Portfolio() {
                     </div>
 
                     <div>
-                      <label htmlFor="message" className="block text-sm font-bold text-gray-700 mb-2">
+                      <label
+                        htmlFor="message"
+                        className="block text-sm font-bold text-gray-700 mb-2"
+                      >
                         Message
                       </label>
                       <textarea
@@ -1279,7 +1451,8 @@ export default function Portfolio() {
                     {submitStatus === "success" && (
                       <div className="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-xl">
                         <p className="text-green-700 font-medium text-sm sm:text-base">
-                          ✅ Message sent successfully! I'll get back to you soon.
+                          ✅ Message sent successfully! I'll get back to you
+                          soon.
                         </p>
                       </div>
                     )}
@@ -1287,7 +1460,8 @@ export default function Portfolio() {
                     {submitStatus === "error" && (
                       <div className="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl">
                         <p className="text-red-700 font-medium text-sm sm:text-base">
-                          ❌ Failed to send message. Please try again or email me directly.
+                          ❌ Failed to send message. Please try again or email
+                          me directly.
                         </p>
                       </div>
                     )}
@@ -1325,10 +1499,14 @@ export default function Portfolio() {
           <div className="text-center">
             <div className="flex items-center justify-center mb-4">
               <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 mr-2" />
-              <p className="text-gray-300 text-base sm:text-lg">Made with passion by Sahil Pathan</p>
+              <p className="text-gray-300 text-base sm:text-lg">
+                Made with passion by Sahil Pathan
+              </p>
               <Coffee className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 ml-2" />
             </div>
-            <p className="text-gray-400 text-sm sm:text-base">© 2024 Sahil Pathan. All rights reserved.</p>
+            <p className="text-gray-400 text-sm sm:text-base">
+              © 2024 Sahil Pathan. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
@@ -1339,7 +1517,7 @@ export default function Portfolio() {
             opacity: 0;
             transform: translate3d(0, -100%, 0);
           }
-        to {
+          to {
             opacity: 1;
             transform: translate3d(0, 0, 0);
           }
@@ -1354,79 +1532,163 @@ export default function Portfolio() {
         }
 
         @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
+          0%,
+          100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(180deg);
+          }
         }
 
         @keyframes float-medium {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(90deg); }
+          0%,
+          100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-15px) rotate(90deg);
+          }
         }
 
         @keyframes float-fast {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-25px) rotate(270deg); }
+          0%,
+          100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-25px) rotate(270deg);
+          }
         }
 
         @keyframes float-random {
-          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-          25% { transform: translate(10px, -10px) rotate(90deg); }
-          50% { transform: translate(-5px, -20px) rotate(180deg); }
-          75% { transform: translate(-10px, 5px) rotate(270deg); }
+          0%,
+          100% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+          25% {
+            transform: translate(10px, -10px) rotate(90deg);
+          }
+          50% {
+            transform: translate(-5px, -20px) rotate(180deg);
+          }
+          75% {
+            transform: translate(-10px, 5px) rotate(270deg);
+          }
         }
 
         @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
 
         @keyframes pulse-slow {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.1); }
+          0%,
+          100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(1.1);
+          }
         }
 
         @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
         }
 
         @keyframes wiggle {
-          0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(5deg); }
-          75% { transform: rotate(-5deg); }
+          0%,
+          100% {
+            transform: rotate(0deg);
+          }
+          25% {
+            transform: rotate(5deg);
+          }
+          75% {
+            transform: rotate(-5deg);
+          }
         }
 
         @keyframes twinkle {
-          0%, 100% { opacity: 0; transform: scale(0); }
-          50% { opacity: 1; transform: scale(1); }
+          0%,
+          100% {
+            opacity: 0;
+            transform: scale(0);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1);
+          }
         }
 
         @keyframes grid-move {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(50px, 50px); }
+          0% {
+            transform: translate(0, 0);
+          }
+          100% {
+            transform: translate(50px, 50px);
+          }
         }
 
         @keyframes drift-1 {
-          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-          33% { transform: translate(30px, -30px) rotate(120deg); }
-          66% { transform: translate(-20px, 20px) rotate(240deg); }
+          0%,
+          100% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+          33% {
+            transform: translate(30px, -30px) rotate(120deg);
+          }
+          66% {
+            transform: translate(-20px, 20px) rotate(240deg);
+          }
         }
 
         @keyframes drift-2 {
-          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-          50% { transform: translate(-40px, -20px) rotate(180deg); }
+          0%,
+          100% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+          50% {
+            transform: translate(-40px, -20px) rotate(180deg);
+          }
         }
 
         @keyframes drift-3 {
-          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-          25% { transform: translate(20px, -40px) rotate(90deg); }
-          75% { transform: translate(-30px, 10px) rotate(270deg); }
+          0%,
+          100% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+          25% {
+            transform: translate(20px, -40px) rotate(90deg);
+          }
+          75% {
+            transform: translate(-30px, 10px) rotate(270deg);
+          }
         }
 
         @keyframes drift-4 {
-          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-          33% { transform: translate(-25px, -15px) rotate(120deg); }
-          66% { transform: translate(35px, -25px) rotate(240deg); }
+          0%,
+          100% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+          33% {
+            transform: translate(-25px, -15px) rotate(120deg);
+          }
+          66% {
+            transform: translate(35px, -25px) rotate(240deg);
+          }
         }
 
         .animate-float-slow {
@@ -1499,5 +1761,5 @@ export default function Portfolio() {
         }
       `}</style>
     </div>
-  )
+  );
 }
