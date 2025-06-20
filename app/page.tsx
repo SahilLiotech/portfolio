@@ -682,7 +682,7 @@ export default function Portfolio() {
                   <img
                     src="/profile-image.jpg"
                     alt="Sahil Pathan - Flutter Developer"
-                    className="w-full h-full object-cover object-fit: cover" // Add object-fit: cover
+                    className="w-full object-cover object-fit: cover" // Add object-fit: cover
                   />
                 </div>
               </div>
