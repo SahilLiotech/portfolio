@@ -27,9 +27,8 @@ export async function POST(request: NextRequest) {
 
     // Send the email
     const { data, error } = await resend.emails.send({
-      // Use your verified domain or keep the default for testing
-      from: "Portfolio Contact <onboarding@resend.dev>", // Change this to your domain when verified
-      to: ["pathansahil1800@gmail.com"], // Your email where you want to receive messages
+      from: "Portfolio Contact <onboarding@resend.dev>",
+      to: ["pathansahil1800@gmail.com"],
       subject: `🚀 New Portfolio Contact from ${name}`,
       html: `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 20px;">
@@ -100,7 +99,7 @@ export async function POST(request: NextRequest) {
           </div>
         </div>
       `,
-      replyTo: email, // This allows you to reply directly to the sender
+      replyTo: email,
     })
 
     if (error) {

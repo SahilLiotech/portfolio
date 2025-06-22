@@ -46,14 +46,12 @@ import {
   Loader2,
 } from "lucide-react";
 
-// Hook to detect mobile devices - more specific detection
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkIsMobile = () => {
-      // More specific mobile detection - only phones, not tablets
-      setIsMobile(window.innerWidth < 640); // sm breakpoint
+      setIsMobile(window.innerWidth < 640);
     };
 
     checkIsMobile();
@@ -65,31 +63,24 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-// Completely remove animations for mobile
 const FloatingShapes = () => {
   const isMobile = useIsMobile();
 
-  // No animations at all on mobile
   if (isMobile) return null;
 
-  // Full animations for desktop/tablet
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Animated circles */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full animate-float-slow"></div>
       <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-pink-400/20 to-red-400/20 rounded-full animate-float-medium"></div>
       <div className="absolute bottom-32 left-20 w-40 h-40 bg-gradient-to-r from-green-400/20 to-teal-400/20 rounded-full animate-float-fast"></div>
       <div className="absolute bottom-20 right-32 w-28 h-28 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-full animate-float-slow"></div>
 
-      {/* Animated squares */}
       <div className="absolute top-60 left-1/4 w-16 h-16 bg-gradient-to-r from-indigo-400/15 to-blue-400/15 rotate-45 animate-spin-slow"></div>
       <div className="absolute bottom-60 right-1/4 w-20 h-20 bg-gradient-to-r from-purple-400/15 to-pink-400/15 rotate-12 animate-pulse-slow"></div>
 
-      {/* Animated triangles */}
       <div className="absolute top-1/3 right-10 w-0 h-0 border-l-[20px] border-r-[20px] border-b-[35px] border-l-transparent border-r-transparent border-b-cyan-400/20 animate-bounce-slow"></div>
       <div className="absolute bottom-1/3 left-1/3 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[25px] border-l-transparent border-r-transparent border-b-emerald-400/20 animate-wiggle"></div>
 
-      {/* Floating dots */}
       {[...Array(15)].map((_, i) => (
         <div
           key={i}
@@ -106,11 +97,10 @@ const FloatingShapes = () => {
   );
 };
 
-// Remove grid animation for mobile
 const AnimatedGrid = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) return null; // Completely disabled on mobile
+  if (isMobile) return null;
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-30">
@@ -129,11 +119,10 @@ const AnimatedGrid = () => {
   );
 };
 
-// Remove particle system for mobile
 const ParticleSystem = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) return null; // Completely disabled on mobile
+  if (isMobile) return null;
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -152,12 +141,10 @@ const ParticleSystem = () => {
     </div>
   );
 };
-
-// Remove gradient orbs for mobile
 const GradientOrbs = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) return null; // Completely disabled on mobile
+  if (isMobile) return null;
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -169,14 +156,12 @@ const GradientOrbs = () => {
   );
 };
 
-// Simplified intersection observer - no animations on mobile
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef(null);
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // On mobile, immediately set to intersecting (no animation delays)
     if (isMobile) {
       setIsIntersecting(true);
       return;
@@ -207,22 +192,31 @@ const useIntersectionObserver = (options = {}) => {
   return [ref, isIntersecting];
 };
 
-// No animations on mobile - instant display
-const AnimatedSection = ({ children, className = "", delay = 0 }) => {
-  const [ref, isIntersecting] = useIntersectionObserver({
+interface AnimatedSectionProps {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}
+
+const AnimatedSection: React.FC<AnimatedSectionProps> = ({
+  children,
+  className = "",
+  delay = 0,
+}) => {
+  const intersection = useIntersectionObserver({
     threshold: 0.1,
     rootMargin: "50px",
   });
+  const ref = intersection[0] as React.Ref<HTMLDivElement>;
+  const isIntersecting = intersection[1];
   const isMobile = useIsMobile();
 
-  // On mobile, no animations - just show content immediately
   if (isMobile) {
     return (
       <div className={`opacity-100 translate-y-0 ${className}`}>{children}</div>
     );
   }
 
-  // Desktop/tablet animations
   return (
     <div
       ref={ref}
@@ -253,12 +247,11 @@ export default function Portfolio() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Instant loading for mobile, animated for desktop
     const timer = setTimeout(
       () => {
         setIsLoaded(true);
       },
-      isMobile ? 0 : 500 // Instant for mobile
+      isMobile ? 0 : 500
     );
 
     const handleScroll = () => {
@@ -314,20 +307,22 @@ export default function Portfolio() {
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
+      const result = await response.json();
 
       if (response.ok) {
         setSubmitStatus("success");
         setFormData({ name: "", email: "", message: "" });
       } else {
         setSubmitStatus("error");
+        console.error("Server error:", result.error);
       }
     } catch (error) {
       setSubmitStatus("error");
+      console.error("Network error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -682,7 +677,7 @@ export default function Portfolio() {
                   <img
                     src="/profile-image.jpg"
                     alt="Sahil Pathan - Flutter Developer"
-                    className="w-full object-cover object-fit: cover" // Add object-fit: cover
+                    className="w-full object-cover object-fit: cover"
                   />
                 </div>
               </div>
