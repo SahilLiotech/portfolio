@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +14,6 @@ import {
   Github,
   Linkedin,
   Mail,
-  Phone,
   MapPin,
   Download,
   Calendar,
@@ -40,47 +37,56 @@ import {
   ChevronDown,
   Sparkles,
   Rocket,
-  Send,
   Heart,
   Coffee,
-  Loader2,
 } from "lucide-react";
 
+// ✅ new, safer version
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
+    // use the browser’s media-query engine – no manual resize math needed
+    const mq = window.matchMedia("(max-width: 639px)");
 
-    checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
+    // initial value
+    setIsMobile(mq.matches);
 
-    return () => window.removeEventListener("resize", checkIsMobile);
+    // handler that only runs when value really changes
+    const handleChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+
+    mq.addEventListener("change", handleChange);
+    return () => mq.removeEventListener("change", handleChange);
   }, []);
 
   return isMobile;
 };
 
+// Completely remove animations for mobile
 const FloatingShapes = () => {
   const isMobile = useIsMobile();
 
+  // No animations at all on mobile
   if (isMobile) return null;
 
+  // Full animations for desktop/tablet
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Animated circles */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full animate-float-slow"></div>
       <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-pink-400/20 to-red-400/20 rounded-full animate-float-medium"></div>
       <div className="absolute bottom-32 left-20 w-40 h-40 bg-gradient-to-r from-green-400/20 to-teal-400/20 rounded-full animate-float-fast"></div>
       <div className="absolute bottom-20 right-32 w-28 h-28 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-full animate-float-slow"></div>
 
+      {/* Animated squares */}
       <div className="absolute top-60 left-1/4 w-16 h-16 bg-gradient-to-r from-indigo-400/15 to-blue-400/15 rotate-45 animate-spin-slow"></div>
       <div className="absolute bottom-60 right-1/4 w-20 h-20 bg-gradient-to-r from-purple-400/15 to-pink-400/15 rotate-12 animate-pulse-slow"></div>
 
+      {/* Animated triangles */}
       <div className="absolute top-1/3 right-10 w-0 h-0 border-l-[20px] border-r-[20px] border-b-[35px] border-l-transparent border-r-transparent border-b-cyan-400/20 animate-bounce-slow"></div>
       <div className="absolute bottom-1/3 left-1/3 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[25px] border-l-transparent border-r-transparent border-b-emerald-400/20 animate-wiggle"></div>
 
+      {/* Floating dots */}
       {[...Array(15)].map((_, i) => (
         <div
           key={i}
@@ -97,10 +103,11 @@ const FloatingShapes = () => {
   );
 };
 
+// Remove grid animation for mobile
 const AnimatedGrid = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) return null;
+  if (isMobile) return null; // Completely disabled on mobile
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-30">
@@ -119,10 +126,11 @@ const AnimatedGrid = () => {
   );
 };
 
+// Remove particle system for mobile
 const ParticleSystem = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) return null;
+  if (isMobile) return null; // Completely disabled on mobile
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -141,10 +149,12 @@ const ParticleSystem = () => {
     </div>
   );
 };
+
+// Remove gradient orbs for mobile
 const GradientOrbs = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) return null;
+  if (isMobile) return null; // Completely disabled on mobile
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -156,6 +166,7 @@ const GradientOrbs = () => {
   );
 };
 
+// Simplified intersection observer - no animations on mobile
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef(null);
@@ -163,14 +174,13 @@ const useIntersectionObserver = (options = {}) => {
 
   useEffect(() => {
     if (isMobile) {
+      // run only once on mount for mobile
       setIsIntersecting(true);
       return;
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsIntersecting(entry.isIntersecting);
-      },
+      ([entry]) => setIsIntersecting(entry.isIntersecting),
       {
         threshold: 0.1,
         rootMargin: "50px",
@@ -178,16 +188,14 @@ const useIntersectionObserver = (options = {}) => {
       }
     );
 
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
+    const node = ref.current;
+    if (node) observer.observe(node);
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
+      if (node) observer.unobserve(node);
     };
-  }, [options, isMobile]);
+    // 👇 `isMobile` removed – prevents endless re-subs
+  }, [options]);
 
   return [ref, isIntersecting];
 };
@@ -198,6 +206,7 @@ interface AnimatedSectionProps {
   delay?: number;
 }
 
+// No animations on mobile - instant display
 const AnimatedSection: React.FC<AnimatedSectionProps> = ({
   children,
   className = "",
@@ -235,23 +244,17 @@ export default function Portfolio() {
   const [activeSection, setActiveSection] = useState("home");
   const [isLoaded, setIsLoaded] = useState(false);
   const [scrollY, setScrollY] = useState(0);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<
-    "idle" | "success" | "error"
-  >("idle");
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedPhone, setCopiedPhone] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    // Instant loading for mobile, animated for desktop
     const timer = setTimeout(
       () => {
         setIsLoaded(true);
       },
-      isMobile ? 0 : 500
+      isMobile ? 0 : 500 // Instant for mobile
     );
 
     const handleScroll = () => {
@@ -299,42 +302,20 @@ export default function Portfolio() {
     setMobileMenuOpen(false);
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus("idle");
-
+  // Copy to clipboard functions
+  const copyToClipboard = async (text: string, type: "email" | "phone") => {
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setSubmitStatus("success");
-        setFormData({ name: "", email: "", message: "" });
+      await navigator.clipboard.writeText(text);
+      if (type === "email") {
+        setCopiedEmail(true);
+        setTimeout(() => setCopiedEmail(false), 2000);
       } else {
-        setSubmitStatus("error");
-        console.error("Server error:", result.error);
+        setCopiedPhone(true);
+        setTimeout(() => setCopiedPhone(false), 2000);
       }
-    } catch (error) {
-      setSubmitStatus("error");
-      console.error("Network error:", error);
-    } finally {
-      setIsSubmitting(false);
+    } catch (err) {
+      console.error("Failed to copy: ", err);
     }
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
   };
 
   const skills = {
@@ -524,7 +505,13 @@ export default function Portfolio() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative">
+    <div
+      className="min-h-screen bg-white relative"
+      style={{ colorScheme: "light" }}
+    >
+      {/* Force light mode background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 -z-10"></div>
+
       {/* Add all animated background components */}
       <FloatingShapes />
       <AnimatedGrid />
@@ -677,7 +664,7 @@ export default function Portfolio() {
                   <img
                     src="/profile-image.jpg"
                     alt="Sahil Pathan - Flutter Developer"
-                    className="w-full object-cover object-fit: cover"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               </div>
@@ -1258,231 +1245,173 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* Contact Section - Fixed for mobile */}
+      {/* Contact Section */}
       <section
         id="contact"
         className="py-12 sm:py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/5 to-purple-400/5"></div>
+        {/* Decorative Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Large decorative shapes */}
+          <div className="absolute top-10 left-10 w-32 h-32 bg-blue-200/30 rounded-full blur-xl"></div>
+          <div className="absolute top-20 right-20 w-24 h-24 bg-pink-200/40 rounded-full blur-lg"></div>
+          <div className="absolute bottom-32 left-20 w-40 h-40 bg-green-200/25 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-20 right-32 w-28 h-28 bg-yellow-200/35 rounded-full blur-xl"></div>
+
+          {/* Small decorative dots */}
+          <div className="absolute top-1/4 left-1/3 w-3 h-3 bg-blue-400/40 rounded-full"></div>
+          <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-purple-400/50 rounded-full"></div>
+          <div className="absolute bottom-1/3 left-1/4 w-4 h-4 bg-emerald-400/30 rounded-full"></div>
+          <div className="absolute bottom-1/4 right-1/3 w-2 h-2 bg-pink-400/40 rounded-full"></div>
+
+          {/* Geometric shapes */}
+          <div className="absolute top-1/2 left-10 w-6 h-6 bg-cyan-300/30 rotate-45 rounded-sm"></div>
+          <div className="absolute top-1/4 right-10 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-teal-300/40"></div>
+          <div className="absolute bottom-1/2 right-20 w-5 h-5 bg-indigo-300/35 rotate-12 rounded-sm"></div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <AnimatedSection>
             <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent mb-4">
-                Let's Connect
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent mb-4 sm:mb-6">
+                Get In Touch
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">
-                Ready to discuss opportunities and collaborations
+              <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-4">
+                I'm always excited to work on new projects and collaborate with
+                talented teams. Let's discuss how we can bring your mobile app
+                ideas to life.
               </p>
             </div>
           </AnimatedSection>
 
-          <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
+          <div className="max-w-5xl mx-auto">
+            {/* Contact Cards */}
             <AnimatedSection delay={200}>
-              <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8">
-                  Get In Touch
-                </h3>
-                <div className="space-y-4 sm:space-y-6">
-                  <div className="flex items-center p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-white/20">
-                    <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl mr-4 sm:mr-6 shadow-lg flex-shrink-0">
-                      <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-gray-900 text-base sm:text-lg">
-                        Email
-                      </p>
-                      <a
-                        href="mailto:pathansahil1800@gmail.com"
-                        className="text-blue-600 hover:text-blue-800 transition-colors duration-200 text-sm sm:text-lg break-all"
-                      >
-                        pathansahil1800@gmail.com
-                      </a>
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
+                {/* Email Card */}
+                <Card className="text-center p-6 sm:p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-0 shadow-xl bg-white/90 backdrop-blur-sm group">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <Mail className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
                   </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
+                    Email
+                  </h3>
+                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base break-all px-2">
+                    pathansahil1800@gmail.com
+                  </p>
+                  <Button
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto px-6 py-2"
+                    onClick={() =>
+                      window.open(
+                        "mailto:pathansahil1800@gmail.com?subject=Portfolio Inquiry&body=Hi Sahil,%0D%0A%0D%0AI found your portfolio and would like to discuss..."
+                      )
+                    }
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Send Email
+                  </Button>
+                </Card>
 
-                  <div className="flex items-center p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-white/20">
-                    <div className="p-3 sm:p-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl mr-4 sm:mr-6 shadow-lg flex-shrink-0">
-                      <Phone className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-gray-900 text-base sm:text-lg">
-                        Phone
-                      </p>
-                      <a
-                        href="tel:+917874443558"
-                        className="text-blue-600 hover:text-blue-800 transition-colors duration-200 text-sm sm:text-lg"
-                      >
-                        +91-7874443558
-                      </a>
-                    </div>
+                {/* LinkedIn Card */}
+                <Card className="text-center p-6 sm:p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-0 shadow-xl bg-white/90 backdrop-blur-sm group">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <Linkedin className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
                   </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
+                    LinkedIn
+                  </h3>
+                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                    Connect with me
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 w-full sm:w-auto px-6 py-2"
+                    onClick={() =>
+                      window.open(
+                        "https://www.linkedin.com/in/sahil-pathan-a23a94249/",
+                        "_blank"
+                      )
+                    }
+                  >
+                    <Linkedin className="w-4 h-4 mr-2" />
+                    Connect
+                  </Button>
+                </Card>
 
-                  <div className="flex items-center p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-white/20">
-                    <div className="p-3 sm:p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mr-4 sm:mr-6 shadow-lg flex-shrink-0">
-                      <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-gray-900 text-base sm:text-lg">
-                        Location
-                      </p>
-                      <p className="text-gray-600 text-sm sm:text-lg">
-                        Surat, Gujarat, India
-                      </p>
-                    </div>
+                {/* GitHub Card */}
+                <Card className="text-center p-6 sm:p-8 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-0 shadow-xl bg-white/90 backdrop-blur-sm group">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <Github className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
                   </div>
-                </div>
-
-                <div className="mt-8 sm:mt-10">
-                  <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">
-                    Connect With Me
-                  </h4>
-                  <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                    <Button
-                      size={isMobile ? "default" : "lg"}
-                      className="flex items-center bg-gray-900 hover:bg-gray-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto justify-center"
-                      asChild
-                    >
-                      <a
-                        href="https://github.com/SahilLiotech/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Github className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                        GitHub
-                      </a>
-                    </Button>
-                    <Button
-                      size={isMobile ? "default" : "lg"}
-                      className="flex items-center bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto justify-center"
-                      asChild
-                    >
-                      <a
-                        href="https://www.linkedin.com/in/sahil-pathan-a23a94249/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Linkedin className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                        LinkedIn
-                      </a>
-                    </Button>
-                  </div>
-                </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
+                    GitHub
+                  </h3>
+                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                    View my repositories
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 w-full sm:w-auto px-6 py-2"
+                    onClick={() =>
+                      window.open("https://github.com/SahilLiotech", "_blank")
+                    }
+                  >
+                    <Github className="w-4 h-4 mr-2" />
+                    View Profile
+                  </Button>
+                </Card>
               </div>
             </AnimatedSection>
 
+            {/* Call to Action Section */}
             <AnimatedSection delay={400}>
-              <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm">
-                <CardHeader className="p-4 sm:p-6">
-                  <CardTitle className="text-xl sm:text-2xl">
-                    Send a Message
-                  </CardTitle>
-                  <CardDescription className="text-base sm:text-lg">
-                    I'd love to hear from you. Send me a message and I'll
-                    respond as soon as possible.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                  <form
-                    onSubmit={handleFormSubmit}
-                    className="space-y-4 sm:space-y-6"
-                  >
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-bold text-gray-700 mb-2"
+              <div className="text-center">
+                <Card className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 sm:p-12 shadow-2xl border-0 hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-1 max-w-4xl mx-auto">
+                  <div className="relative">
+                    {/* Decorative elements inside CTA */}
+                    <div className="absolute -top-4 -left-4 w-8 h-8 bg-blue-200/40 rounded-full blur-sm"></div>
+                    <div className="absolute -bottom-4 -right-4 w-6 h-6 bg-purple-200/40 rounded-full blur-sm"></div>
+
+                    <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
+                      Ready to Start a Project?
+                    </h3>
+                    <p className="text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto px-4">
+                      Whether you need a new mobile app or want to improve an
+                      existing one, I'm here to help bring your vision to life.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                      <Button
+                        size="lg"
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 px-8 py-4 text-base sm:text-lg w-full sm:w-auto"
+                        onClick={() =>
+                          window.open(
+                            "mailto:pathansahil1800@gmail.com?subject=Project Collaboration&body=Hi Sahil,%0D%0A%0D%0AI have a project idea and would like to collaborate..."
+                          )
+                        }
                       >
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base sm:text-lg"
-                        placeholder="Your Name"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-bold text-gray-700 mb-2"
+                        <Mail className="w-5 h-5 mr-2" />
+                        Let's Talk
+                        <ExternalLink className="w-4 h-4 ml-2" />
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 px-8 py-4 text-base sm:text-lg w-full sm:w-auto bg-transparent"
+                        asChild
                       >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base sm:text-lg"
-                        placeholder="your.email@example.com"
-                      />
+                        <a
+                          href="https://drive.google.com/file/d/1i5T4c5mx1b203QcafTk_lNTk-K8SoJhc/view?usp=sharing"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Download className="w-5 h-5 mr-2" />
+                          Download Resume
+                        </a>
+                      </Button>
                     </div>
-
-                    <div>
-                      <label
-                        htmlFor="message"
-                        className="block text-sm font-bold text-gray-700 mb-2"
-                      >
-                        Message
-                      </label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        value={formData.message}
-                        onChange={handleInputChange}
-                        required
-                        rows={isMobile ? 4 : 5}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base sm:text-lg resize-none"
-                        placeholder="Your message..."
-                      ></textarea>
-                    </div>
-
-                    {submitStatus === "success" && (
-                      <div className="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-xl">
-                        <p className="text-green-700 font-medium text-sm sm:text-base">
-                          ✅ Message sent successfully! I'll get back to you
-                          soon.
-                        </p>
-                      </div>
-                    )}
-
-                    {submitStatus === "error" && (
-                      <div className="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl">
-                        <p className="text-red-700 font-medium text-sm sm:text-base">
-                          ❌ Failed to send message. Please try again or email
-                          me directly.
-                        </p>
-                      </div>
-                    )}
-
-                    <Button
-                      type="submit"
-                      size={isMobile ? "default" : "lg"}
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-base sm:text-lg py-3 sm:py-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                          Send Message
-                          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+                  </div>
+                </Card>
+              </div>
             </AnimatedSection>
           </div>
         </div>
@@ -1684,58 +1613,6 @@ export default function Portfolio() {
           66% {
             transform: translate(35px, -25px) rotate(240deg);
           }
-        }
-
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-
-        .animate-float-medium {
-          animation: float-medium 4s ease-in-out infinite;
-        }
-
-        .animate-float-fast {
-          animation: float-fast 3s ease-in-out infinite;
-        }
-
-        .animate-float-random {
-          animation: float-random 8s ease-in-out infinite;
-        }
-
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-
-        .animate-bounce-slow {
-          animation: bounce-slow 3s ease-in-out infinite;
-        }
-
-        .animate-wiggle {
-          animation: wiggle 2s ease-in-out infinite;
-        }
-
-        .animate-twinkle {
-          animation: twinkle 3s ease-in-out infinite;
-        }
-
-        .animate-drift-1 {
-          animation: drift-1 20s ease-in-out infinite;
-        }
-
-        .animate-drift-2 {
-          animation: drift-2 15s ease-in-out infinite;
-        }
-
-        .animate-drift-3 {
-          animation: drift-3 18s ease-in-out infinite;
-        }
-
-        .animate-drift-4 {
-          animation: drift-4 22s ease-in-out infinite;
         }
 
         /* Mobile optimizations */
