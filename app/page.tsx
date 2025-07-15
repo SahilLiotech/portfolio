@@ -664,7 +664,7 @@ export default function Portfolio() {
                   <img
                     src="/profile-image.jpg"
                     alt="Sahil Pathan - Flutter Developer"
-                    className="w-full h-full object-cover"
+                    className="w-full object-cover"
                   />
                 </div>
               </div>
