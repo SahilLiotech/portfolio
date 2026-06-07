@@ -1,11 +1,31 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+})
+
 export const metadata: Metadata = {
-  title: 'Sahil Portfolio',
-  keywords: ['Sahil', 'Portfolio', 'Web Developer', 'Software Engineer', 'Frontend Developer', 'Flutter Developer', 'cross-platform', 'hybrid apps', 'mobile apps', 'web apps', 'developer', 'programmer', 'flutter', 'dart', 'firebase'],
-  description: 'Created by Sahil, a flutter developer with expertise in building cross-platform applications.',
-  authors: [{ name: 'Sahil', url: 'https://github.com/SahilLiotech' }],
+  title: 'Sahil Pathan — Flutter Developer',
+  keywords: [
+    'Sahil Pathan',
+    'Flutter Developer',
+    'Mobile Application Engineer',
+    'Dart',
+    'Cross-Platform',
+    'POS',
+    'KDS',
+    'Firebase',
+    'Razorpay',
+    'Riverpod',
+    'BLoC',
+  ],
+  description:
+    'Professional portfolio of Pathan Sahil A., a Flutter Developer with 2+ years of experience building production-grade mobile applications.',
+  authors: [{ name: 'Pathan Sahil A.', url: 'https://github.com/SahilLiotech' }],
 }
 
 export default function RootLayout({
@@ -14,8 +34,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   )
 }
