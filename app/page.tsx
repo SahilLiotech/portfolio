@@ -731,7 +731,7 @@ export default function Portfolio() {
                   asChild
                 >
                   <a
-                    href="https://drive.google.com/file/d/1i5T4c5mx1b203QcafTk_lNTk-K8SoJhc/view?usp=sharing"
+                    href="https://drive.google.com/file/d/1xf_wWOm-WpCuGwt-vDgzSfsW_67h64ru/view?usp=drive_link"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
