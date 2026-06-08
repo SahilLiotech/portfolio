@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
@@ -26,6 +26,15 @@ export const metadata: Metadata = {
   description:
     'Professional portfolio of Pathan Sahil A., a Flutter Developer with 2+ years of experience building production-grade mobile applications.',
   authors: [{ name: 'Pathan Sahil A.', url: 'https://github.com/SahilLiotech' }],
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0b' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({

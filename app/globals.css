@@ -5,7 +5,8 @@
 /* ─── Design Tokens ─── */
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    /* Faint cool-gray canvas so pure-white cards lift off it */
+    --background: 240 20% 98%;
     --foreground: 240 10% 4%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 4%;
@@ -13,16 +14,16 @@
     --popover-foreground: 240 10% 4%;
     --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 96%;
+    --secondary: 240 9% 94%;
     --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
+    --muted: 240 9% 94%;
+    --muted-foreground: 240 5% 40%;
+    --accent: 240 9% 94%;
     --accent-foreground: 240 6% 10%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
+    --border: 240 9% 80%;
+    --input: 240 9% 80%;
     --ring: 221 83% 53%;
     --radius: 0.75rem;
 
@@ -112,6 +113,8 @@
 
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-cyan-400;
+    background-size: 200% auto;
+    animation: gradientShift 6s ease-in-out infinite;
   }
 
   .glow-blue {
@@ -146,6 +149,33 @@
   opacity: 0.025;
 }
 
+/* ─── Light-mode card elevation ───
+   Dark mode separates cards via lightness; light mode is flat without a
+   shadow, so give every card a soft resting shadow. Hover utilities still
+   override on :hover. */
+:root .bg-card {
+  box-shadow:
+    0 1px 2px hsl(240 10% 10% / 0.06),
+    0 2px 6px hsl(240 10% 10% / 0.05),
+    0 8px 20px -6px hsl(240 10% 10% / 0.08);
+}
+.dark .bg-card {
+  box-shadow: none;
+}
+
+/* ─── Universal card hover-lift ───
+   Cohesive micro-interaction across every card. Hover-capable pointers only,
+   so touch devices don't get stuck-hover states. */
+.bg-card {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease, border-color 0.35s ease;
+}
+@media (hover: hover) {
+  .bg-card:hover {
+    transform: translateY(-4px);
+  }
+}
+
 @keyframes animateIn {
   from {
     opacity: 0;
@@ -170,4 +200,25 @@
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.8; }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Respect reduced-motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

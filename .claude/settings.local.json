@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sips -g pixelWidth -g pixelHeight profile-image.jpg)",
+      "Bash(cp profile-image.jpg profile-image.original.jpg)",
+      "Bash(sips -Z 640 profile-image.jpg --out profile-image.jpg)",
+      "Bash(sips -s format jpeg -s formatOptions 80 profile-image.jpg --out profile-image.jpg)",
+      "Bash(awk '{print $5\" bytes\"}')",
+      "Bash(rm -rf .next/prod)",
+      "Bash(timeout 180 npx next build)",
+      "Bash(npx next *)"
+    ]
+  }
+}

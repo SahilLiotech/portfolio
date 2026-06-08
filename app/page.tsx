@@ -24,7 +24,6 @@ import {
   Play,
   Target,
   ChevronDown,
-  Sparkles,
   Rocket,
   Heart,
   Check,
@@ -34,25 +33,12 @@ import {
   CheckCircle,
   Sun,
   Moon,
-  Monitor,
   Shield,
   Cpu,
   ArrowRight,
 } from "lucide-react";
 
 /* ─────────────────────────── Hooks ─────────────────────────── */
-
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return isMobile;
-};
 
 const useScrollReveal = () => {
   const [visible, setVisible] = useState(false);
@@ -96,7 +82,7 @@ const Reveal = ({
 /* ─────────────────── Theme Toggle Button ───────────────────── */
 
 const ThemeToggle = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -127,11 +113,11 @@ const FlameIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function Portfolio() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const [scrollY, setScrollY] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [titleIndex, setTitleIndex] = useState(0);
-  const isMobile = useIsMobile();
+  const progressRef = useRef<HTMLDivElement>(null);
 
   const titles = [
     "Flutter Developer",
@@ -147,22 +133,44 @@ export default function Portfolio() {
     return () => clearInterval(interval);
   }, []);
 
-  // Section tracking
+  // Navbar bg toggle — rAF-throttled boolean. Same-value setState bails out,
+  // so this no longer re-renders the whole tree on every scroll frame.
   useEffect(() => {
+    let ticking = false;
     const onScroll = () => {
-      setScrollY(window.scrollY);
-      const sections = ["home", "about", "skills", "experience", "projects", "education", "contact"];
-      const pos = window.scrollY + 140;
-      for (const s of sections) {
-        const el = document.getElementById(s);
-        if (el && pos >= el.offsetTop && pos < el.offsetTop + el.offsetHeight) {
-          setActiveSection(s);
-          break;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        setScrolled(y > 50);
+        // Scroll-progress bar — mutate DOM directly, no React re-render.
+        if (progressRef.current) {
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          progressRef.current.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
         }
-      }
+        ticking = false;
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Active section via IntersectionObserver — no per-scroll loop.
+  useEffect(() => {
+    const sections = ["home", "about", "skills", "experience", "projects", "education", "contact"]
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        }
+      },
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
   }, []);
 
   const scrollTo = useCallback((id: string) => {
@@ -278,11 +286,19 @@ export default function Portfolio() {
   return (
     <div className="min-h-screen bg-background text-foreground grain">
 
+      {/* ═══════════════════ SCROLL PROGRESS ══════════════════════ */}
+      <div className="fixed top-0 inset-x-0 z-[60] h-0.5 bg-transparent pointer-events-none">
+        <div
+          ref={progressRef}
+          className="h-full origin-left scale-x-0 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400 will-change-transform"
+        />
+      </div>
+
       {/* ═══════════════════ AMBIENT BACKGROUND ═══════════════════ */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/[0.03] dark:bg-blue-500/[0.04] rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/[0.03] dark:bg-purple-500/[0.04] rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-cyan-500/[0.015] dark:bg-cyan-500/[0.02] rounded-full blur-[150px]" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/[0.06] dark:bg-blue-500/[0.04] rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/[0.06] dark:bg-purple-500/[0.04] rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-cyan-500/[0.04] dark:bg-cyan-500/[0.02] rounded-full blur-[150px]" />
         {/* Subtle dot pattern */}
         <div
           className="absolute inset-0 opacity-[0.12] dark:opacity-[0.08]"
@@ -295,7 +311,7 @@ export default function Portfolio() {
 
       {/* ═══════════════════════ NAVBAR ═══════════════════════════ */}
       <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrollY > 50 || mobileMenuOpen
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled || mobileMenuOpen
           ? "py-3 glass shadow-sm shadow-black/[0.03] dark:shadow-black/[0.1]"
           : "py-5 bg-transparent"
           }`}
@@ -381,10 +397,20 @@ export default function Portfolio() {
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 rounded-full blur-3xl scale-110" />
                 {/* Image container */}
                 <div className="relative">
-                  <div className="w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full border-2 border-border/40 overflow-hidden bg-muted shadow-2xl">
+                  {/* Rotating conic gradient ring */}
+                  <div
+                    className="absolute -inset-[5px] rounded-full animate-[spin_8s_linear_infinite] opacity-80 blur-[1px]"
+                    style={{ backgroundImage: "conic-gradient(from 0deg, #3b82f6, #a855f7, #22d3ee, #3b82f6)" }}
+                  />
+                  <div className="relative w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full border-[3px] border-background overflow-hidden bg-muted shadow-2xl">
                     <img
                       src="/profile-image.jpg"
                       alt="Sahil Pathan"
+                      width={640}
+                      height={640}
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                     />
                   </div>
@@ -428,7 +454,7 @@ export default function Portfolio() {
               </Reveal>
 
               <Reveal delay={300}>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 text-center lg:text-left">
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 text-center lg:text-justify">
                   Results-driven Flutter Developer with 2+ years of experience architecting and shipping production-grade mobile applications. Specialized in POS, KDS, and ordering systems with clean architecture, payment integration, and offline-first design.
                 </p>
               </Reveal>
@@ -514,7 +540,7 @@ export default function Portfolio() {
                 <Reveal key={i} delay={i * 80}>
                   <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card hover:border-border transition-all group h-full">
                     <s.icon className="w-5 h-5 text-blue-500 mb-3 group-hover:scale-110 transition-transform" />
-                    <div className="text-2xl sm:text-3xl font-bold text-foreground">{s.value}</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-gradient">{s.value}</div>
                     <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
                   </div>
                 </Reveal>
@@ -629,7 +655,13 @@ export default function Portfolio() {
 
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-lg font-bold">{p.title}</h3>
-                    <Badge variant="secondary" className="text-[10px] font-medium shrink-0">Live</Badge>
+                    <Badge variant="secondary" className="text-[10px] font-medium shrink-0 gap-1.5">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      </span>
+                      Live
+                    </Badge>
                   </div>
 
                   <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-grow text-left sm:text-justify">
