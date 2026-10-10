@@ -1,37 +1,50 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Bricolage_Grotesque, Onest } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
+import { SITE_URL } from './site'
 import './globals.css'
 
-const inter = Inter({
+// Display: Bricolage Grotesque's optical-size axis tightens it at large sizes.
+const display = Bricolage_Grotesque({
   subsets: ['latin'],
-  variable: '--font-inter',
+  axes: ['opsz'],
+  variable: '--font-display',
 })
 
+// Body and UI text.
+const sans = Onest({
+  subsets: ['latin'],
+  variable: '--font-sans',
+})
+
+const description =
+  'Flutter developer at Tenacious Techies since June 2024, working on the FoodChow ordering, POS and kitchen display apps.'
+
 export const metadata: Metadata = {
-  title: 'Sahil Pathan — Flutter Developer',
-  keywords: [
-    'Sahil Pathan',
-    'Flutter Developer',
-    'Mobile Application Engineer',
-    'Dart',
-    'Cross-Platform',
-    'POS',
-    'KDS',
-    'Firebase',
-    'Razorpay',
-    'Riverpod',
-    'BLoC',
-  ],
-  description:
-    'Professional portfolio of Pathan Sahil A., a Flutter Developer with 2+ years of experience building production-grade mobile applications.',
-  authors: [{ name: 'Pathan Sahil A.', url: 'https://github.com/SahilLiotech' }],
+  metadataBase: new URL(SITE_URL),
+  title: 'Sahil Pathan, Flutter Developer',
+  description,
+  authors: [{ name: 'Sahil Pathan', url: 'https://github.com/SahilLiotech' }],
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'profile',
+    url: '/',
+    siteName: 'Sahil Pathan',
+    title: 'Sahil Pathan, Flutter Developer',
+    description,
+    locale: 'en_IN',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sahil Pathan, Flutter Developer',
+    description,
+  },
 }
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0a0b' },
+    { media: '(prefers-color-scheme: light)', color: '#f9f8f6' },
+    { media: '(prefers-color-scheme: dark)', color: '#131211' },
   ],
   width: 'device-width',
   initialScale: 1,
@@ -44,12 +57,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${display.variable} ${sans.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange={false}
+          disableTransitionOnChange
         >
           {children}
         </ThemeProvider>

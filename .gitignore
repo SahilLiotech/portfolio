@@ -26,3 +26,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# local tooling and private notes
+.claude/
+*.original.*
+*.bak

@@ -1,874 +1,602 @@
-"use client";
+import { ArrowUpRight, ArrowUp, Github, Linkedin } from "lucide-react";
+import { SiteHeader } from "./site-header";
+import { CopyButton } from "./copy-button";
+import { ShotCarousel, type Shot } from "./shot-carousel";
+import { RevealOnScroll } from "./reveal-on-scroll";
+import { LINKS, NAV, SITE_URL } from "./site";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Github,
-  Linkedin,
-  Mail,
-  Phone,
-  MapPin,
-  Download,
-  Calendar,
-  GraduationCap,
-  Briefcase,
-  Code,
-  Smartphone,
-  Database,
-  Globe,
-  Menu,
-  X,
-  ExternalLink,
-  Play,
-  Target,
-  ChevronDown,
-  Rocket,
-  Heart,
-  Check,
-  Copy,
-  Layers,
-  Terminal,
-  CheckCircle,
-  Sun,
-  Moon,
-  Shield,
-  Cpu,
-  ArrowRight,
-} from "lucide-react";
+/* ─────────────────────────── Data ──────────────────────────── */
 
-/* ─────────────────────────── Hooks ─────────────────────────── */
+// Every number here can be checked: dates against LinkedIn, downloads on Google Play.
+const STATS = [
+  { value: "2+", label: "Years of Flutter in production", short: "Years of Flutter" },
+  { value: "3", label: "Apps I work on, live on Google Play", short: "Live apps" },
+  { value: "10K+", label: "Downloads of the ordering app", short: "Downloads" },
+];
 
-const useScrollReveal = () => {
-  const [visible, setVisible] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
-    );
-    const el = ref.current;
-    if (el) observer.observe(el);
-    return () => { if (el) observer.unobserve(el); };
-  }, []);
-  return [ref, visible] as const;
+const EXPERIENCE = [
+  {
+    title: "Flutter Developer",
+    company: "Tenacious Techies",
+    type: "Full-time",
+    period: "Oct 2024 – Present",
+    points: [
+      "Planned the MVC structure of the FoodChow Ordering app and built its ordering module, which runs takeaway, dine-in and delivery through one flow.",
+      "Integrated Razorpay end to end: checkout, payment callbacks, failure handling, and verifying the payment before the order is confirmed.",
+      "Added real-time order status, priority flags and per-station filtering to FoodChow KDS, and reworked its layout for large kitchen tablets.",
+      "Maintain billing, table management and reporting in FoodChow POS, built on Provider and 20+ backend APIs.",
+      "Built an offline layer on Hive for sessions and the cart, so staff don't lose an order when the network drops.",
+      "Turn Figma designs into Flutter screens for phones and tablets, and track down crashes with Flutter DevTools and Firebase Crashlytics.",
+    ],
+  },
+  {
+    title: "Flutter Intern",
+    company: "Tenacious Techies",
+    type: "Internship",
+    period: "Jun 2024 – Sep 2024",
+    points: [
+      "Shipped changes to production in FoodChow POS and the customer app within my first two weeks.",
+      "Wrote API modules for order processing and data sync.",
+      "Moved screens to Provider for state, and added Hive caching for data the app needs offline.",
+    ],
+  },
+];
+
+const PROJECTS: {
+  title: string;
+  kind: string;
+  downloads: string;
+  description: string;
+  myPart: string[];
+  stack: string[];
+  link: string;
+  landscape?: boolean;
+  shots: Shot[];
+}[] = [
+  {
+    title: "FoodChow Ordering",
+    kind: "Customer app",
+    downloads: "10K+ downloads",
+    description:
+      "Customers use it to order takeaway, dine-in or delivery from restaurants on FoodChow, and pay with Razorpay.",
+    myPart: [
+      "Planned the MVC module structure",
+      "One ordering flow for takeaway, dine-in and delivery",
+      "Razorpay checkout with post-payment verification",
+      "Address and profile management",
+    ],
+    stack: ["Flutter", "MVC", "Razorpay", "REST"],
+    link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow",
+    shots: [
+      { src: "/projects/ordering/1.webp", alt: "Choosing takeaway, dine-in or delivery and browsing nearby restaurants", width: 407, height: 880 },
+      { src: "/projects/ordering/2.webp", alt: "Restaurant menu with filters and add-to-cart", width: 407, height: 880 },
+      { src: "/projects/ordering/3.webp", alt: "Live order tracking from placed to delivered", width: 407, height: 880 },
+      { src: "/projects/ordering/4.webp", alt: "Order history with per-order details", width: 407, height: 880 },
+    ],
+  },
+  {
+    title: "FoodChow POS",
+    kind: "Point of sale",
+    downloads: "1K+ downloads",
+    description:
+      "Restaurant staff use it for billing, tables, online orders and end-of-day reports. It keeps working when the internet doesn't.",
+    myPart: [
+      "Billing, tables and reports on Provider",
+      "Offline storage and cart cache on Hive",
+      "HTTP client with auth token handling",
+      "20+ backend API integrations",
+    ],
+    stack: ["Flutter", "Provider", "Hive", "REST"],
+    link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow.pos",
+    shots: [
+      { src: "/projects/pos/1.webp", alt: "Phone billing screen for takeaway, delivery and dine-in orders", width: 405, height: 880 },
+      { src: "/projects/pos/2.webp", alt: "Table layout showing available, reserved and cooking tables", width: 405, height: 880 },
+      { src: "/projects/pos/3.webp", alt: "Online orders to accept or decline, with paid and unpaid status", width: 405, height: 880 },
+      { src: "/projects/pos/4.webp", alt: "Operational reports: sales by item, category, hour and more", width: 405, height: 880 },
+    ],
+  },
+  {
+    title: "FoodChow KDS",
+    kind: "Kitchen display",
+    downloads: "100+ downloads",
+    description: "Cooks see incoming orders on a tablet and mark each item as it's prepared.",
+    myPart: [
+      "Real-time order status tracking",
+      "Priority flags for urgent orders",
+      "Filtering orders by kitchen station",
+      "Layout rework for large tablets",
+    ],
+    stack: ["Flutter", "GetX", "REST"],
+    link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow.kds",
+    landscape: true,
+    shots: [
+      { src: "/projects/kds/1.webp", alt: "Kitchen orders grouped by status, with pending items in red", width: 1200, height: 675 },
+      { src: "/projects/kds/2.webp", alt: "Served orders tab on a large tablet", width: 1200, height: 675 },
+      { src: "/projects/kds/3.webp", alt: "Cancelled orders tab with struck-through items", width: 1200, height: 675 },
+    ],
+  },
+];
+
+// Each item names where it was done, so it reads as evidence rather than a sales pitch.
+const CAN_BUILD = [
+  {
+    title: "Apps from Figma to release",
+    text: "Phone and tablet Flutter apps built from Figma designs, taken all the way to a Google Play release.",
+    proof: "All three FoodChow apps",
+  },
+  {
+    title: "Payments",
+    text: "Razorpay checkout with payment callbacks, failure handling and verification before an order is confirmed.",
+    proof: "FoodChow Ordering",
+  },
+  {
+    title: "Apps that work offline",
+    text: "Local storage on Hive, so carts, sessions and orders survive a dropped connection.",
+    proof: "FoodChow POS",
+  },
+  {
+    title: "REST API integration",
+    text: "Connecting Flutter to a backend: auth tokens, error handling, and syncing data between devices.",
+    proof: "20+ APIs in FoodChow POS",
+  },
+  {
+    title: "Live dashboards on tablets",
+    text: "Screens that update as orders come in and stay readable on a large tablet across a busy kitchen.",
+    proof: "FoodChow KDS",
+  },
+  {
+    title: "Fixing existing apps",
+    text: "Tracking down crashes and bugs in a running app with Flutter DevTools and Firebase Crashlytics.",
+    proof: "FoodChow POS and Ordering",
+  },
+];
+
+// Used every day in the production apps.
+const CORE_SKILLS = ["Flutter", "Dart", "Provider", "GetX", "Hive", "Firebase", "REST APIs", "Razorpay"];
+
+// Learned on my own time; not used at work yet.
+const SELF_TAUGHT = ["BLoC / Cubit", "Riverpod", "MVVM", "Clean Architecture"];
+
+const SKILLS = [
+  { name: "UI", items: ["Responsive layouts for phone and tablet", "Figma to Flutter"] },
+  { name: "Architecture", items: ["MVC", "Repository pattern", "Offline-first data"] },
+  { name: "Networking", items: ["HTTP", "Dio", "JSON serialization"] },
+  { name: "Data & Firebase", items: ["SQLite", "Shared Preferences", "Firestore", "Firebase Auth", "Crashlytics"] },
+  { name: "Tools", items: ["Git & GitHub", "Android Studio", "Flutter DevTools", "Postman"] },
+];
+
+const PERSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Sahil Pathan",
+  jobTitle: "Flutter Developer",
+  url: SITE_URL,
+  email: `mailto:${LINKS.email}`,
+  worksFor: { "@type": "Organization", name: "Tenacious Techies" },
+  address: { "@type": "PostalAddress", addressLocality: "Surat", addressCountry: "IN" },
+  sameAs: [LINKS.github, LINKS.linkedin],
 };
 
-/* ─────────────────────── Reveal Wrapper ────────────────────── */
+/* ───────────────────────── Pieces ──────────────────────────── */
 
-const Reveal = ({
+const container = "mx-auto w-full max-w-5xl px-5 sm:px-8";
+
+// Trailing action in contact rows: one footprint for copy buttons and link arrows,
+// so every row's right edge lines up.
+const rowAction =
+  "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground group-hover:border-foreground/30 group-hover:text-foreground";
+
+// Secondary actions share the primary button's height.
+const outlineButton =
+  "inline-flex h-12 items-center justify-center gap-1.5 rounded-md border px-5 font-medium transition-colors hover:bg-secondary";
+const iconButton =
+  "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground";
+
+const Section = ({
+  id,
+  title,
+  intro,
+  tinted = false,
   children,
-  className = "",
-  delay = 0,
 }: {
+  id: string;
+  title: string;
+  intro?: string;
+  tinted?: boolean;
   children: React.ReactNode;
-  className?: string;
-  delay?: number;
-}) => {
-  const [ref, visible] = useScrollReveal();
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        } ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
+}) => (
+  <section
+    id={id}
+    aria-labelledby={`${id}-title`}
+    className={`border-t py-16 sm:py-24 ${tinted ? "bg-secondary" : ""}`}
+  >
+    <div className={container}>
+      <div className="reveal mb-10 max-w-[40rem] sm:mb-14">
+        <h2 id={`${id}-title`} className="font-display text-[2.5rem] font-bold leading-[1.05] tracking-[-0.03em] sm:text-6xl">
+          {title}
+        </h2>
+        {intro && <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{intro}</p>}
+      </div>
       {children}
     </div>
-  );
-};
-
-/* ─────────────────── Theme Toggle Button ───────────────────── */
-
-const ThemeToggle = () => {
-  const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return <div className="w-9 h-9" />;
-
-  return (
-    <button
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="relative w-9 h-9 flex items-center justify-center rounded-xl border border-border/60 bg-muted/40 hover:bg-muted transition-all duration-300 group"
-      aria-label="Toggle theme"
-    >
-      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0 text-amber-500" />
-      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100 text-blue-400" />
-    </button>
-  );
-};
-
-/* ───────────────── Flame Icon (Firebase) ───────────────────── */
-
-const FlameIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-  </svg>
+  </section>
 );
 
-/* ═══════════════════════ MAIN COMPONENT ════════════════════════ */
+/* ═══════════════════════ PAGE ════════════════════════════════ */
 
 export default function Portfolio() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
-  const [scrolled, setScrolled] = useState(false);
-  const [copiedEmail, setCopiedEmail] = useState(false);
-  const [copiedPhone, setCopiedPhone] = useState(false);
-  const [titleIndex, setTitleIndex] = useState(0);
-  const progressRef = useRef<HTMLDivElement>(null);
-
-  const titles = [
-    "Flutter Developer",
-    "Cross-Platform Engineer",
-    "Mobile App Architect",
-  ];
-
-  // Rotating hero titles
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTitleIndex((p) => (p + 1) % titles.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Navbar bg toggle — rAF-throttled boolean. Same-value setState bails out,
-  // so this no longer re-renders the whole tree on every scroll frame.
-  useEffect(() => {
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const y = window.scrollY;
-        setScrolled(y > 50);
-        // Scroll-progress bar — mutate DOM directly, no React re-render.
-        if (progressRef.current) {
-          const max = document.documentElement.scrollHeight - window.innerHeight;
-          progressRef.current.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
-        }
-        ticking = false;
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Active section via IntersectionObserver — no per-scroll loop.
-  useEffect(() => {
-    const sections = ["home", "about", "skills", "experience", "projects", "education", "contact"]
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => el !== null);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) setActiveSection(entry.target.id);
-        }
-      },
-      { rootMargin: "-45% 0px -50% 0px" }
-    );
-    sections.forEach((s) => observer.observe(s));
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollTo = useCallback((id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 90;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-    setMobileMenuOpen(false);
-  }, []);
-
-  // Clipboard
-  const copyText = async (text: string, type: "email" | "phone") => {
-    try {
-      await navigator.clipboard.writeText(text);
-      if (type === "email") { setCopiedEmail(true); setTimeout(() => setCopiedEmail(false), 2000); }
-      else { setCopiedPhone(true); setTimeout(() => setCopiedPhone(false), 2000); }
-    } catch { }
-  };
-
-  /* ─── Original Links (preserved from prior version) ─── */
-  const LINKS = {
-    github: "https://github.com/SahilLiotech",
-    linkedin: "https://www.linkedin.com/in/sahil-pathan-a23a94249/",
-    email: "pathansahil1800@gmail.com",
-    resume: "https://drive.google.com/file/d/1_1y655pInBSfzZJCrhiwy7D8Zr9Tafbj/view?usp=sharing",
-    resumeAlt: "https://drive.google.com/file/d/1i5T4c5mx1b203QcafTk_lNTk-K8SoJhc/view?usp=sharing",
-  };
-
-  /* ─── Data from resume ─── */
-
-  const skillCategories = [
-    { name: "Mobile Development", icon: Smartphone, color: "text-blue-500 dark:text-blue-400", bg: "bg-blue-500/10", skills: ["Flutter (Dart)", "Widget Lifecycle", "Custom Animations", "Responsive UI", "Platform Channels"] },
-    { name: "State Management", icon: Layers, color: "text-violet-500 dark:text-violet-400", bg: "bg-violet-500/10", skills: ["BLoC / Cubit", "Riverpod", "Provider", "GetX"] },
-    { name: "Architecture", icon: Cpu, color: "text-cyan-500 dark:text-cyan-400", bg: "bg-cyan-500/10", skills: ["MVC", "MVVM", "Clean Architecture", "Repository Pattern", "Dependency Injection"] },
-    { name: "API & Payments", icon: Globe, color: "text-emerald-500 dark:text-emerald-400", bg: "bg-emerald-500/10", skills: ["RESTful APIs", "HTTP & DIO", "Razorpay Gateway", "JSON Serialization"] },
-    { name: "Firebase", icon: FlameIcon, color: "text-amber-500 dark:text-amber-400", bg: "bg-amber-500/10", skills: ["Authentication", "Firestore", "Cloud Storage", "Crashlytics", "Analytics"] },
-    { name: "Databases", icon: Database, color: "text-rose-500 dark:text-rose-400", bg: "bg-rose-500/10", skills: ["Hive (NoSQL)", "SQLite", "Shared Preferences"] },
-    { name: "Dev Tools", icon: Terminal, color: "text-indigo-500 dark:text-indigo-400", bg: "bg-indigo-500/10", skills: ["Git & GitHub", "VS Code", "Android Studio", "Postman", "Flutter DevTools"] },
-    { name: "Testing & QA", icon: Shield, color: "text-teal-500 dark:text-teal-400", bg: "bg-teal-500/10", skills: ["Unit Testing", "Widget Testing", "Debugging", "Crash Analysis"] },
-  ];
-
-  const experiences = [
-    {
-      title: "Flutter Developer",
-      company: "Tenacious Techies",
-      period: "Oct 2024 – Present",
-      type: "Full-time",
-      points: [
-        "Owned architecture planning for the FoodChow Ordering App using MVC, ensuring clean separation, scalable structure, and multi-modal ordering workflows.",
-        "Engineered a multi-method ordering module supporting takeaway, dine-in, and home delivery flows with complex state transitions and address management.",
-        "Integrated Razorpay Payment Gateway end-to-end secure checkout, payment callbacks, failure handling, and order confirmation flows.",
-        "Developed and maintained FoodChow KDS with real-time order display enhancements that improved kitchen throughput and reduced communication errors.",
-        "Maintained and scaled FoodChow POS with Provider state management and HTTP-based API integrations across billing, table management, and reporting.",
-        "Designed offline-first data layer using Hive for session persistence and cart caching, ensuring zero-downtime during network disruptions.",
-        "Collaborated cross-functionally to translate Figma mockups into pixel-perfect, responsive Flutter interfaces for tablet and mobile.",
-        "Improved stability through systematic debugging using Flutter DevTools and Firebase Crashlytics across production deployments.",
-      ],
-    },
-    {
-      title: "Flutter Intern",
-      company: "Tenacious Techies",
-      period: "Jun 2024 – Sep 2024",
-      type: "Internship",
-      points: [
-        "Contributed to production on FoodChow POS and Customer App within the first two weeks, delivering UI enhancements and module-level features.",
-        "Developed and integrated API modules for order processing and data synchronization, improving backend communication reliability.",
-        "Implemented Provider for state management across multiple screens for predictable and maintainable data flow.",
-        "Introduced Hive-based local storage for critical data caching, reducing dependency on network availability.",
-      ],
-    },
-  ];
-
-  const projects = [
-    {
-      title: "FoodChow Ordering App",
-      description: "Production-ready restaurant ordering application with multi-method ordering (takeaway, dine-in, home delivery), Razorpay payment gateway, and full customer journey coverage.",
-      tech: ["Flutter", "Dart", "MVVM", "Riverpod", "Razorpay", "REST APIs"],
-      highlights: ["MVC architecture for scalable modules", "Unified takeaway, dine-in & delivery flows", "Razorpay post-payment verification", "Address & profile management"],
-      link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow&pcampaignid=web_share",
-      accent: "from-blue-500 to-indigo-500",
-      accentLight: "blue",
-    },
-    {
-      title: "FoodChow POS",
-      description: "Production Point-of-Sale system handling real-time restaurant orders, table mapping, billing, offline caching, and comprehensive reporting across live deployments.",
-      tech: ["Flutter", "Dart", "MVC", "Provider", "Hive", "HTTP"],
-      highlights: ["Offline-capable Hive data layer", "Provider session management", "Structured HTTP client with auth tokens", "20+ backend API integrations"],
-      link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow.pos&pcampaignid=web_share",
-      accent: "from-purple-500 to-pink-500",
-      accentLight: "purple",
-    },
-    {
-      title: "FoodChow KDS",
-      description: "Kitchen Display System redesigned for high-volume restaurant environments, optimized for readability on large tablets with real-time order tracking and priority flagging.",
-      tech: ["Flutter", "Dart", "GetX", "REST APIs"],
-      highlights: ["Real-time order status tracking", "Multi-station order filtering", "Large tablet interface overhaul", "Firebase-backed order sync"],
-      link: "https://play.google.com/store/apps/details?id=com.tenacioustechies.foodchow.kds&pcampaignid=web_share",
-      accent: "from-cyan-500 to-teal-500",
-      accentLight: "cyan",
-    },
-  ];
-
-  const stats = [
-    { value: "2+", label: "Years Experience", icon: Briefcase },
-    { value: "3", label: "Production Apps", icon: Rocket },
-    { value: "4", label: "State Paradigms", icon: Layers },
-    { value: "500+", label: "Daily Transactions", icon: Target },
-  ];
-
-  const navItems = ["home", "about", "skills", "experience", "projects", "education", "contact"];
-
   return (
-    <div className="min-h-screen bg-background text-foreground grain">
-
-      {/* ═══════════════════ SCROLL PROGRESS ══════════════════════ */}
-      <div className="fixed top-0 inset-x-0 z-[60] h-0.5 bg-transparent pointer-events-none">
-        <div
-          ref={progressRef}
-          className="h-full origin-left scale-x-0 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400 will-change-transform"
-        />
-      </div>
-
-      {/* ═══════════════════ AMBIENT BACKGROUND ═══════════════════ */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/[0.06] dark:bg-blue-500/[0.04] rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/[0.06] dark:bg-purple-500/[0.04] rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-cyan-500/[0.04] dark:bg-cyan-500/[0.02] rounded-full blur-[150px]" />
-        {/* Subtle dot pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.12] dark:opacity-[0.08]"
-          style={{
-            backgroundImage: "radial-gradient(circle, hsl(var(--foreground) / 0.12) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-      </div>
-
-      {/* ═══════════════════════ NAVBAR ═══════════════════════════ */}
-      <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled || mobileMenuOpen
-          ? "py-3 glass shadow-sm shadow-black/[0.03] dark:shadow-black/[0.1]"
-          : "py-5 bg-transparent"
-          }`}
+    <div className="min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(PERSON_LD) }} />
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[70] focus:rounded-md focus:border focus:bg-background focus:px-4 focus:py-2"
       >
-        <div className="max-w-6xl mx-auto px-5 flex items-center justify-between">
-          {/* Logo */}
-          <button onClick={() => scrollTo("home")} className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-shadow">
-              SP
-            </div>
-            <span className="font-semibold text-sm text-foreground hidden sm:inline">
-              Sahil Pathan
-            </span>
-          </button>
+        Skip to content
+      </a>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-0.5 p-1 rounded-2xl bg-muted/50 border border-border/40">
-            {navItems.map((item) => (
-              <button
-                key={item}
-                onClick={() => scrollTo(item)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-300 ${activeSection === item
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
-              >
-                {item.charAt(0).toUpperCase() + item.slice(1)}
-              </button>
-            ))}
-          </nav>
+      <SiteHeader />
+      <RevealOnScroll />
 
-          {/* Right actions */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="hidden sm:flex w-9 h-9 items-center justify-center rounded-xl border border-border/60 bg-muted/40 hover:bg-muted transition-all text-muted-foreground hover:text-foreground">
-              <Github className="w-4 h-4" />
-            </a>
-            <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="hidden sm:flex w-9 h-9 items-center justify-center rounded-xl border border-border/60 bg-muted/40 hover:bg-muted transition-all text-muted-foreground hover:text-foreground">
-              <Linkedin className="w-4 h-4" />
-            </a>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-muted-foreground"
-            >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        <div className={`md:hidden overflow-hidden transition-all duration-400 ${mobileMenuOpen ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0"}`}>
-          <div className="px-5 py-3 space-y-1 border-t border-border/40 mt-3">
-            {navItems.map((item) => (
-              <button
-                key={item}
-                onClick={() => scrollTo(item)}
-                className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeSection === item ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}
-              >
-                {item.charAt(0).toUpperCase() + item.slice(1)}
-              </button>
-            ))}
-            <div className="flex gap-2 pt-2 px-4">
-              <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                <Github className="w-4 h-4" /> GitHub
-              </a>
-              <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground ml-4">
-                <Linkedin className="w-4 h-4" /> LinkedIn
-              </a>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* ═══════════════════════ HERO ════════════════════════════ */}
-      <section id="home" className="min-h-screen flex items-center pt-24 pb-20">
-        <div className="max-w-6xl mx-auto px-5 w-full">
-          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Right — Profile (renders first on mobile, right on desktop) */}
-            <Reveal delay={300} className="w-full flex justify-center order-first lg:order-last">
-              <div className="relative">
-                {/* Glow */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 rounded-full blur-3xl scale-110" />
-                {/* Image container */}
-                <div className="relative">
-                  {/* Rotating conic gradient ring */}
-                  <div
-                    className="absolute -inset-[5px] rounded-full animate-[spin_8s_linear_infinite] opacity-80 blur-[1px]"
-                    style={{ backgroundImage: "conic-gradient(from 0deg, #3b82f6, #a855f7, #22d3ee, #3b82f6)" }}
-                  />
-                  <div className="relative w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full border-[3px] border-background overflow-hidden bg-muted shadow-2xl">
-                    <img
-                      src="/profile-image.jpg"
-                      alt="Sahil Pathan"
-                      width={640}
-                      height={640}
-                      loading="eager"
-                      fetchPriority="high"
-                      decoding="async"
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                    />
-                  </div>
-                  {/* Floating badges */}
-                  <div className="absolute -right-1 sm:-right-2 top-8 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full surface-card text-[10px] sm:text-xs font-medium shadow-lg flex items-center gap-1.5 animate-in" style={{ animationDelay: "0.8s" }}>
-                    <Code className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500" /> Flutter
-                  </div>
-                  <div className="absolute -left-1 sm:-left-4 bottom-12 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full surface-card text-[10px] sm:text-xs font-medium shadow-lg flex items-center gap-1.5 animate-in" style={{ animationDelay: "1s" }}>
-                    <Database className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-500" /> Firebase
-                  </div>
+      <main id="main" tabIndex={-1} className="outline-none">
+        {/* ═══════════════════════ HERO ════════════════════════════ */}
+        <section id="home" className="pt-10 sm:pt-20">
+          <div className={`${container} grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_17rem] md:gap-14 lg:grid-cols-[minmax(0,1fr)_20rem]`}>
+            {/* Centered on phones and small tablets; left-aligned beside the photo from md up */}
+            <div className="flex flex-col items-center text-center md:items-start md:text-left">
+              {/* Phones get a small photo here; the large one sits beside the text from md up */}
+              <img
+                src="/profile-image.jpg"
+                alt="Portrait of Sahil Pathan"
+                width={640}
+                height={640}
+                loading="eager"
+                decoding="async"
+                className="mb-6 h-24 w-24 rounded-full border object-cover object-top md:hidden"
+              />
+              <p className="text-sm font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                Flutter developer · Surat, India
+              </p>
+              <h1 className="mt-7 font-display text-[clamp(3.5rem,17vw,5.5rem)] font-semibold leading-[0.95] tracking-[-0.025em] sm:mt-8 sm:text-8xl lg:text-[7rem]">
+                Sahil
+                <br />
+                Pathan
+              </h1>
+              <p className="mt-6 max-w-[26rem] text-pretty text-xl leading-snug sm:mt-8 sm:max-w-[32rem] sm:text-2xl">
+                I build and maintain the Flutter apps behind <span className="text-primary">FoodChow</span>: a customer
+                ordering app, a restaurant POS and a kitchen display.
+              </p>
+              <p className="mt-4 max-w-[30rem] text-balance leading-relaxed text-muted-foreground md:max-w-[34rem]">
+                At Tenacious Techies since June 2024, first as an intern and now as a developer. Looking for my next
+                full-time Flutter role.
+              </p>
+              <div className="mt-8 flex w-full max-w-[26rem] flex-col gap-3 sm:mt-10 sm:w-auto sm:max-w-none sm:flex-row">
+                <a
+                  href={`mailto:${LINKS.email}?subject=Flutter%20role`}
+                  className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-6 font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-primary/90 active:scale-[0.96]"
+                >
+                  Email me
+                </a>
+                <div className="flex gap-3">
+                  <a href={LINKS.resume} target="_blank" rel="noopener noreferrer" className={`${outlineButton} flex-1 sm:flex-none`}>
+                    Resume
+                    <ArrowUpRight aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
+                  </a>
+                  <a href={LINKS.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" className={iconButton}>
+                    <Github aria-hidden="true" className="h-5 w-5" strokeWidth={1.75} />
+                  </a>
+                  <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" className={iconButton}>
+                    <Linkedin aria-hidden="true" className="h-5 w-5" strokeWidth={1.75} />
+                  </a>
                 </div>
               </div>
-            </Reveal>
-
-            {/* Left (renders last on mobile, left on desktop) */}
-            <div className="space-y-6 sm:space-y-8 text-center lg:text-left flex flex-col items-center lg:items-start order-last lg:order-first w-full">
-
-
-              <Reveal delay={100}>
-                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15]">
-                  <span className="text-foreground">Hi, I'm </span>
-                  <span className="text-gradient">Sahil Pathan</span>
-                </h1>
-              </Reveal>
-
-              <Reveal delay={200} className="w-full">
-                <div className="relative h-8 sm:h-9 flex items-center justify-center lg:justify-start w-full">
-                  {titles.map((t, i) => (
-                    <div
-                      key={i}
-                      className={`absolute inset-0 flex items-center justify-center lg:justify-start text-base sm:text-xl md:text-2xl font-semibold text-muted-foreground transition-all duration-700 ease-in-out ${i === titleIndex
-                        ? "opacity-100 translate-y-0 pointer-events-auto"
-                        : "opacity-0 -translate-y-2 pointer-events-none"
-                        }`}
-                    >
-                      <span>{t}</span>
-
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-
-              <Reveal delay={300}>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 text-center lg:text-justify">
-                  Results-driven Flutter Developer with 2+ years of experience architecting and shipping production-grade mobile applications. Specialized in POS, KDS, and ordering systems with clean architecture, payment integration, and offline-first design.
-                </p>
-              </Reveal>
-
-              <Reveal delay={400} className="w-full flex justify-center lg:justify-start">
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                  <Button
-                    onClick={() => scrollTo("contact")}
-                    className="rounded-full px-6 h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:scale-[1.02] group w-full sm:w-auto"
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Let's Connect
-                    <ArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-0.5 transition-transform" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="rounded-full px-6 h-11 border-border/60 bg-background/50 hover:bg-muted font-medium transition-all hover:scale-[1.02] w-full sm:w-auto"
-                    asChild
-                  >
-                    <a href={LINKS.resume} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Resume
-                    </a>
-                  </Button>
-                </div>
-              </Reveal>
-
-              <Reveal delay={500}>
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2 text-xs sm:text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Surat, Gujarat</span>
-                  <span className="w-1 h-1 rounded-full bg-border" />
-                  <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> {LINKS.email}</span>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-
-          {/* Scroll indicator */}
-          <div className="hidden lg:flex justify-center mt-16">
-            <button onClick={() => scrollTo("about")} className="text-muted-foreground/50 hover:text-muted-foreground transition-colors animate-bounce">
-              <ChevronDown className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════ ABOUT ════════════════════════════ */}
-      <section id="about" className="py-16 sm:py-24 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-5">
-          <Reveal className="text-center mb-12 sm:mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase text-blue-500 mb-2">About</p>
-            <h2 className="text-3xl sm:text-4xl font-bold">Professional Journey</h2>
-          </Reveal>
-
-          <div className="grid lg:grid-cols-5 gap-8 lg:gap-10">
-            {/* Narrative */}
-            <div className="lg:col-span-3 space-y-6">
-              <Reveal>
-                <p className="text-muted-foreground leading-relaxed text-left sm:text-justify">
-                  I'm a dedicated Flutter Developer with a proven track record of designing and architecting mobile systems from the ground up. Working in the restaurant technology space, I've managed multiple production products delivering POS systems, real-time Kitchen Display Systems, and client-facing ordering applications that handle 500+ daily transactions.
-                </p>
-              </Reveal>
-              <Reveal delay={100}>
-                <p className="text-muted-foreground leading-relaxed text-left sm:text-justify">
-                  My expertise spans MVC/MVVM architectures, reactive state management (BLoC, Riverpod, Provider, GetX), end-to-end Razorpay payment integration, and offline-first data layers using Hive. I prioritize clean, scalable code design that ensures high availability a critical requirement in fast-paced commercial environments.
-                </p>
-              </Reveal>
-              <Reveal delay={200}>
-                <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-muted/30">
-                  <h3 className="font-semibold text-sm flex items-center gap-2 mb-2">
-                    <Target className="w-4 h-4 text-purple-500" /> Objective
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed text-left sm:text-justify">
-                    To leverage my expertise in Flutter development to build high-performance, scalable, and user-friendly mobile applications. Seeking opportunities to contribute innovative solutions while continuously enhancing my skills in clean architecture, state management, and payment integrations.
-                  </p>
-                </div>
-              </Reveal>
             </div>
 
-            {/* Stats */}
-            <div className="lg:col-span-2 grid grid-cols-2 gap-3 sm:gap-4">
-              {stats.map((s, i) => (
-                <Reveal key={i} delay={i * 80}>
-                  <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card hover:border-border transition-all group h-full">
-                    <s.icon className="w-5 h-5 text-blue-500 mb-3 group-hover:scale-110 transition-transform" />
-                    <div className="text-2xl sm:text-3xl font-bold text-gradient">{s.value}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
-                  </div>
-                </Reveal>
+            <figure className="hidden overflow-hidden rounded-lg border bg-card md:block">
+              <img
+                src="/profile-image.jpg"
+                alt="Portrait of Sahil Pathan"
+                width={640}
+                height={640}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                className="aspect-[4/5] w-full object-cover object-top"
+              />
+              <figcaption className="grid gap-1 border-t p-4">
+                <span className="text-sm text-muted-foreground">Currently</span>
+                <span className="text-sm font-medium">Flutter Developer at Tenacious Techies</span>
+                <span className="text-sm text-muted-foreground">Surat, India · UTC+5:30</span>
+              </figcaption>
+            </figure>
+          </div>
+
+          <div className={`${container} mt-14 sm:mt-24`}>
+            <dl className="grid grid-cols-3 border-t">
+              {STATS.map((s, i) => (
+                <div
+                  key={s.label}
+                  className={`flex flex-col items-center px-2 py-6 text-center sm:py-8 md:items-start md:px-0 md:text-left ${i > 0 ? "border-l md:pl-8" : "md:pr-4"}`}
+                >
+                  <dt className="order-2 mt-1.5 text-[13px] leading-snug text-muted-foreground sm:text-sm">
+                    <span className="sm:hidden">{s.short}</span>
+                    <span className="hidden sm:inline">{s.label}</span>
+                  </dt>
+                  <dd className="order-1 font-display text-[2rem] font-bold tabular-nums leading-none tracking-[-0.03em] sm:text-6xl">{s.value}</dd>
+                </div>
               ))}
+            </dl>
+          </div>
+        </section>
+
+        {/* ═══════════════════════ ABOUT ════════════════════════════ */}
+        <Section id="about" title="About me" tinted>
+          <div className="reveal grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16">
+            <p className="font-display text-2xl font-medium leading-[1.3] tracking-[-0.015em] sm:text-[2rem]">
+              My apps run in restaurants during service, so a frozen screen or a lost order costs someone real money.
+              Most of my work is about making that not happen.
+            </p>
+            <div className="space-y-5 leading-relaxed text-muted-foreground">
+              <p>
+                I joined Tenacious Techies as an intern in June 2024 and had changes in production within two weeks.
+                Since October 2024 I&rsquo;ve worked full-time across all three FoodChow apps.
+              </p>
+              <p>
+                At work I use MVC with Provider or GetX, Hive for offline storage and Razorpay for payments. On my own
+                time I&rsquo;ve learned BLoC, Riverpod, MVVM and Clean Architecture, which we don&rsquo;t use at work
+                yet.
+              </p>
             </div>
           </div>
-        </div>
-      </section>
+        </Section>
 
-      {/* ═══════════════════════ SKILLS ═══════════════════════════ */}
-      <section id="skills" className="py-16 sm:py-24 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-5">
-          <Reveal className="text-center mb-12 sm:mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase text-purple-500 mb-2">Skills</p>
-            <h2 className="text-3xl sm:text-4xl font-bold">Core Competencies</h2>
-          </Reveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {skillCategories.map((cat, i) => {
-              const Icon = cat.icon;
-              return (
-                <Reveal key={i} delay={i * 60}>
-                  <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card hover:border-border hover:shadow-lg hover:shadow-black/[0.03] dark:hover:shadow-black/[0.08] transition-all duration-300 group h-full">
-                    <div className={`w-10 h-10 rounded-xl ${cat.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                      <Icon className={`w-5 h-5 ${cat.color}`} />
-                    </div>
-                    <h3 className="font-semibold text-sm mb-3">{cat.name}</h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {cat.skills.map((s, j) => (
-                        <span key={j} className="text-[11px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/40">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ EXPERIENCE ═══════════════════════════ */}
-      <section id="experience" className="py-16 sm:py-24 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-5">
-          <Reveal className="text-center mb-12 sm:mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase text-cyan-500 mb-2">Experience</p>
-            <h2 className="text-3xl sm:text-4xl font-bold">Professional Timeline</h2>
-          </Reveal>
-
-          <div className="max-w-4xl mx-auto relative space-y-8">
-            {/* Vertical line */}
-            <div className="absolute left-[11px] top-3 bottom-3 w-px bg-gradient-to-b from-blue-500 via-purple-500 to-border hidden sm:block" />
-
-            {experiences.map((exp, i) => (
-              <Reveal key={i} delay={i * 120}>
-                <div className="relative sm:pl-10">
-                  {/* Dot */}
-                  <div className="absolute left-0 top-2 w-[23px] h-[23px] rounded-full border-[3px] border-blue-500 bg-background hidden sm:flex items-center justify-center z-10">
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                  </div>
-
-                  <div className="p-5 sm:p-8 rounded-2xl border border-border/60 border-l-4 border-l-blue-500 sm:border-l-border/60 bg-card hover:border-border hover:shadow-lg hover:shadow-black/[0.03] dark:hover:shadow-black/[0.08] transition-all duration-300">
-                    {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                      <div>
-                        <span className="text-[10px] font-semibold tracking-widest uppercase text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded">
-                          {exp.type}
-                        </span>
-                        <h3 className="text-xl font-bold mt-2">{exp.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          <span className="font-medium text-foreground">{exp.company}</span> · Surat, Gujarat
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full w-fit">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {exp.period}
-                      </div>
-                    </div>
-
-                    {/* Points */}
-                    <ul className="space-y-3">
-                      {exp.points.map((p, j) => (
-                        <li key={j} className="flex items-start gap-3 text-sm text-muted-foreground leading-relaxed text-left sm:text-justify">
-                          <span className="mt-2 w-1 h-1 rounded-full bg-blue-500 flex-shrink-0" />
-                          {p}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ PROJECTS ═════════════════════════════ */}
-      <section id="projects" className="py-16 sm:py-24 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-5">
-          <Reveal className="text-center mb-12 sm:mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase text-blue-500 mb-2">Projects</p>
-            <h2 className="text-3xl sm:text-4xl font-bold">Production Applications</h2>
-          </Reveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((p, i) => (
-              <Reveal key={i} delay={i * 100}>
-                <div className="flex flex-col h-full p-5 sm:p-6 rounded-2xl border border-border/60 bg-card hover:border-border hover:shadow-xl hover:shadow-black/[0.04] dark:hover:shadow-black/[0.1] transition-all duration-400 group">
-                  {/* Top gradient bar */}
-                  <div className={`w-full h-1 rounded-full bg-gradient-to-r ${p.accent} mb-5 opacity-60 group-hover:opacity-100 transition-opacity`} />
-
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-bold">{p.title}</h3>
-                    <Badge variant="secondary" className="text-[10px] font-medium shrink-0 gap-1.5">
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      </span>
-                      Live
-                    </Badge>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-grow text-left sm:text-justify">
-                    {p.description}
+        {/* ═══════════════════ EXPERIENCE ═══════════════════════════ */}
+        <Section
+          id="experience"
+          title="Experience"
+          intro="One company since June 2024: four months as an intern, then hired full-time."
+        >
+          <ol className="divide-y">
+            {EXPERIENCE.map((e) => (
+              <li key={e.title} className="reveal grid gap-x-12 gap-y-4 py-10 first:pt-0 md:grid-cols-[14rem_minmax(0,1fr)]">
+                <div>
+                  <p className="text-sm tabular-nums text-muted-foreground">{e.period}</p>
+                  <h3 className="mt-1 font-display text-2xl font-bold tracking-[-0.02em]">{e.title}</h3>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    {e.company} · {e.type}
                   </p>
+                </div>
+                <ul className="space-y-3 text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+                  {e.points.map((p) => (
+                    <li key={p} className="flex gap-3">
+                      <span aria-hidden="true" className="mt-[0.6em] h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      <span className="min-w-0 flex-1">{p}</span>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+            <li id="education" className="grid gap-x-12 gap-y-2 pt-10 md:grid-cols-[14rem_minmax(0,1fr)]">
+              <div>
+                <p className="text-sm tabular-nums text-muted-foreground">2021 – 2024</p>
+                <h3 className="mt-1 font-display text-2xl font-bold tracking-[-0.02em]">Education</h3>
+              </div>
+              <div className="md:pt-6">
+                <p className="font-medium">Bachelor of Computer Applications</p>
+                <p className="mt-0.5 text-muted-foreground">
+                  Shree G.K. &amp; C.K. Bosmia College, Jetpur · Graduated with distinction
+                </p>
+              </div>
+            </li>
+          </ol>
+        </Section>
 
-                  {/* Tech */}
-                  <div className="flex flex-wrap gap-1.5 mb-5">
-                    {p.tech.map((t, j) => (
-                      <span key={j} className="text-[10px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/40 font-medium">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Highlights */}
-                  <ul className="space-y-1.5 mb-6">
-                    {p.highlights.map((h, j) => (
-                      <li key={j} className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <CheckCircle className="w-3 h-3 text-emerald-500 shrink-0" />
-                        {h}
+        {/* ═══════════════════ PROJECTS ═════════════════════════════ */}
+        <Section
+          id="projects"
+          title="Projects"
+          intro="All three are live on Google Play. They're team products, so each one lists the part I built."
+          tinted
+        >
+          <ol className="grid gap-5 sm:gap-6">
+            {PROJECTS.map((p) => (
+              <li key={p.title} className="reveal overflow-hidden rounded-lg border bg-background">
+                <div className="p-5 sm:p-8">
+                  <p className="text-sm font-medium text-primary">
+                    {p.kind} <span className="text-muted-foreground">· {p.downloads}</span>
+                  </p>
+                  <h3 className="mt-1.5 font-display text-3xl font-bold tracking-[-0.03em] sm:text-4xl">{p.title}</h3>
+                  <p className="mt-4 max-w-[40rem] leading-relaxed text-muted-foreground">{p.description}</p>
+                  <h4 className="mt-6 text-sm font-medium">My part</h4>
+                  <ul className="mt-2.5 grid gap-x-8 gap-y-2.5 text-[15px] sm:grid-cols-2">
+                    {p.myPart.map((h) => (
+                      <li key={h} className="flex gap-3">
+                        <span aria-hidden="true" className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                        <span>{h}</span>
                       </li>
                     ))}
                   </ul>
-
-                  {/* CTA */}
-                  <Button size="sm" className={`w-full rounded-xl bg-gradient-to-r ${p.accent} text-white hover:opacity-90 transition-all font-medium`} asChild>
-                    <a href={p.link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      View on Play Store
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </Button>
                 </div>
-              </Reveal>
+                <ShotCarousel title={p.title} shots={p.shots} landscape={p.landscape} />
+                <div className="flex flex-col gap-4 border-t bg-secondary/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+                  <ul aria-label="Built with" className="flex flex-wrap gap-1.5">
+                    {p.stack.map((t) => (
+                      <li key={t} className="rounded-md border bg-background px-2.5 py-1 text-sm">{t}</li>
+                    ))}
+                  </ul>
+                  <a
+                    href={p.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border bg-background px-4 text-sm font-medium transition-colors hover:bg-secondary"
+                  >
+                    Google Play<span className="sr-only">: {p.title}</span>
+                    <ArrowUpRight aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
+                  </a>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+
+        {/* ═══════════════════ WHAT I CAN BUILD ═════════════════════ */}
+        <Section id="build" title="What I can build" intro="Work I've already shipped, and can do again on your app.">
+          <ul className="grid gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-2 lg:grid-cols-3">
+            {CAN_BUILD.map((c) => (
+              <li key={c.title} className="reveal flex flex-col bg-background p-5 sm:p-6">
+                <h3 className="font-display text-xl font-bold tracking-[-0.02em]">{c.title}</h3>
+                <p className="mt-2 flex-1 leading-relaxed text-muted-foreground">{c.text}</p>
+                <p className="mt-4 text-sm">
+                  <span className="text-muted-foreground">Shipped in </span>
+                  <span className="font-medium text-primary">{c.proof}</span>
+                </p>
+              </li>
+            ))}
+          </ul>
+        </Section>
+
+        {/* ═══════════════════════ SKILLS ═══════════════════════════ */}
+        <Section id="skills" title="Skills" intro="What I use at work every day, and what I've learned on my own." tinted>
+          <div className="reveal divide-y border-y">
+            <div className="grid gap-3 py-6 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8">
+              <div>
+                <h3 className="font-display text-lg font-bold tracking-[-0.01em] sm:leading-9">Daily at work</h3>
+                <p className="text-sm text-muted-foreground">In the production apps</p>
+              </div>
+              <ul className="flex flex-wrap gap-2">
+                {CORE_SKILLS.map((c) => (
+                  <li
+                    key={c}
+                    className="inline-flex h-9 items-center rounded-md bg-primary/10 px-3 font-display text-base font-semibold text-primary"
+                  >
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="grid gap-3 py-6 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8">
+              <div>
+                <h3 className="font-display text-lg font-bold tracking-[-0.01em] sm:leading-9">Self-taught</h3>
+                <p className="text-sm text-muted-foreground">Learned on my own time</p>
+              </div>
+              <ul className="flex flex-wrap gap-2">
+                {SELF_TAUGHT.map((c) => (
+                  <li
+                    key={c}
+                    className="inline-flex h-9 items-center rounded-md border border-primary/40 px-3 font-display text-base font-semibold"
+                  >
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {SKILLS.map((s) => (
+              <div key={s.name} className="grid gap-3 py-6 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8">
+                <h3 className="font-medium sm:leading-8">{s.name}</h3>
+                <ul className="flex flex-wrap gap-2">
+                  {s.items.map((it) => (
+                    <li key={it} className="inline-flex min-h-8 items-center rounded-md border px-2.5 py-1 text-sm text-muted-foreground">
+                      {it}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </div>
-        </div>
-      </section>
+        </Section>
+      </main>
 
-      {/* ══════════════════ EDUCATION ═════════════════════════════ */}
-      <section id="education" className="py-16 sm:py-24 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-5">
-          <Reveal className="text-center mb-12 sm:mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase text-purple-500 mb-2">Education</p>
-            <h2 className="text-3xl sm:text-4xl font-bold">Academic Background</h2>
-          </Reveal>
-
-          <Reveal className="max-w-3xl mx-auto">
-            <div className="p-5 sm:p-8 rounded-2xl border border-border/60 bg-card hover:border-border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/10">
-                  <GraduationCap className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">Bachelor of Computer Applications (BCA)</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">Shree G.K. & C.K. Bosmia College, Jetpur</p>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-600 dark:text-emerald-400">✓ Completed</Badge>
-                    <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-600 dark:text-purple-400">★ Distinction</Badge>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full w-fit shrink-0">
-                <Calendar className="w-3.5 h-3.5" />
-                2021 – 2024
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ═══════════════════ CONTACT ══════════════════════════════ */}
-      <section id="contact" className="py-16 sm:py-24 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-5">
-          <Reveal className="text-center mb-12 sm:mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase text-blue-500 mb-2">Contact</p>
-            <h2 className="text-3xl sm:text-4xl font-bold">Get In Touch</h2>
-            <p className="text-sm text-muted-foreground mt-3 max-w-md mx-auto">
-              Open for opportunities, freelance projects, and engineering discussions.
-            </p>
-          </Reveal>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* Contact cards */}
-            <div className="space-y-3">
-              {/* Email */}
-              <Reveal delay={50}>
-                <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-border transition-all flex items-center justify-between group">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center"><Mail className="w-4.5 h-4.5 text-blue-500" /></div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Email</p>
-                      <p className="text-sm font-medium select-all">{LINKS.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => copyText(LINKS.email, "email")} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
-                      {copiedEmail ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
-                    <button onClick={() => window.open(`mailto:${LINKS.email}?subject=Portfolio Inquiry&body=Hi Sahil,%0D%0A%0D%0AI found your portfolio and would like to discuss...`)} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </Reveal>
-
-              {/* Phone */}
-              <Reveal delay={100}>
-                <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-border transition-all flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center"><Phone className="w-4.5 h-4.5 text-purple-500" /></div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</p>
-                      <p className="text-sm font-medium select-all">+91-7874443558</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => copyText("+91-7874443558", "phone")} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
-                      {copiedPhone ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
-                    <button onClick={() => window.open("tel:+917874443558")} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </Reveal>
-
-              {/* LinkedIn */}
-              <Reveal delay={150}>
-                <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-border transition-all flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center"><Linkedin className="w-4.5 h-4.5 text-indigo-500" /></div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">LinkedIn</p>
-                      <p className="text-sm font-medium">Connect with me</p>
-                    </div>
-                  </div>
-                  <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </Reveal>
-
-              {/* GitHub */}
-              <Reveal delay={200}>
-                <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-border transition-all flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-neutral-500/10 flex items-center justify-center"><Github className="w-4.5 h-4.5" /></div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">GitHub</p>
-                      <p className="text-sm font-medium">View my repositories</p>
-                    </div>
-                  </div>
-                  <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </Reveal>
+      {/* ═══════════ CONTACT + FOOTER (inverted band) ═════════════ */}
+      <div className="inverse dark bg-background text-foreground">
+        <section id="contact" aria-labelledby="contact-title" className="py-16 sm:py-24">
+          <div className={`${container} grid gap-10 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-16`}>
+            <div>
+              <h2 id="contact-title" className="font-display text-[2.75rem] font-bold leading-[1] tracking-[-0.03em] sm:text-6xl">
+                Hiring a Flutter developer? <span className="text-primary">Let&rsquo;s talk.</span>
+              </h2>
+              <p className="mt-6 max-w-[30rem] text-lg leading-relaxed text-muted-foreground">
+                I&rsquo;m looking for a full-time Flutter role. Email gets the quickest reply.
+              </p>
+              <a
+                href={`mailto:${LINKS.email}?subject=Flutter%20role`}
+                className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-md bg-primary px-6 font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-primary/90 active:scale-[0.96] sm:w-auto"
+              >
+                Email me
+              </a>
             </div>
 
-            {/* CTA Panel */}
-            <Reveal delay={150} className="h-full">
-              <div className="p-5 sm:p-8 rounded-2xl border border-border/60 bg-card h-full flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Ready to collaborate?</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed text-left sm:text-justify">
-                    Whether you need a new mobile app or want to improve an existing one, I'm here to help bring your vision to life with clean, production-ready Flutter code.
-                  </p>
+            <ul className="self-start divide-y overflow-hidden rounded-lg border bg-muted">
+              <li className="flex items-center gap-4 p-4 sm:px-5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <a href={`mailto:${LINKS.email}`} className="block text-sm font-medium hover:underline min-[360px]:text-[15px] sm:text-base">
+                    {/* Allow a line break only after the @ on the narrowest phones */}
+                    {LINKS.email.split("@")[0]}@<wbr />{LINKS.email.split("@")[1]}
+                  </a>
                 </div>
-                <div className="space-y-3 mt-8">
-                  <Button
-                    className="w-full h-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25 transition-all group"
-                    onClick={() => window.open(`mailto:${LINKS.email}?subject=Project Collaboration&body=Hi Sahil,%0D%0A%0D%0AI have a project idea and would like to collaborate...`)}
+                <CopyButton text={LINKS.email} label="Email address" className={rowAction} />
+              </li>
+              <li className="flex items-center gap-4 p-4 sm:px-5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <a href={LINKS.phoneHref} className="block text-[15px] font-medium tabular-nums hover:underline sm:text-base">
+                    {LINKS.phone}
+                  </a>
+                </div>
+                <CopyButton text={LINKS.phone} label="Phone number" className={rowAction} />
+              </li>
+              {[
+                { label: "LinkedIn", value: "sahil-pathan", href: LINKS.linkedin },
+                { label: "GitHub", value: "SahilLiotech", href: LINKS.github },
+                { label: "Resume", value: "PDF on Google Drive", href: LINKS.resume },
+              ].map((r) => (
+                <li key={r.label}>
+                  <a
+                    href={r.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-4 p-4 transition-colors hover:bg-background/40 sm:px-5"
                   >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Let's Talk
-                    <ExternalLink className="w-3.5 h-3.5 ml-2 opacity-60 group-hover:opacity-100 transition-opacity" />
-                  </Button>
-                  <Button variant="outline" className="w-full h-12 rounded-xl border-border/60 font-medium transition-all" asChild>
-                    <a href={LINKS.resumeAlt} target="_blank" rel="noopener noreferrer">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Resume
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </Reveal>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm text-muted-foreground">{r.label}</span>
+                      <span className="block text-[15px] font-medium sm:text-base">{r.value}</span>
+                    </span>
+                    <span className={rowAction}>
+                      <ArrowUpRight aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ═══════════════════ FOOTER ═══════════════════════════════ */}
-      <footer className="py-10 border-t border-border/40">
-        <div className="max-w-6xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold">SP</div>
-            <span className="text-sm font-medium">Pathan Sahil A.</span>
+        <footer className="border-t">
+          <div className={`${container} flex flex-col gap-6 py-8 sm:flex-row sm:items-center sm:justify-between`}>
+            <div>
+              <p className="font-display text-xl font-bold tracking-[-0.02em]">Sahil Pathan</p>
+              <p className="mt-1 text-sm text-muted-foreground">Flutter developer · Surat, India</p>
+            </div>
+            <nav aria-label="Footer">
+              <ul className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                {NAV.slice(0, 4).map((n) => (
+                  <li key={n.id}>
+                    <a href={`#${n.id}`} className="text-muted-foreground transition-colors hover:text-foreground">{n.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            Made with <Heart className="w-3.5 h-3.5 text-red-500 fill-current" /> and lots of ☕
+          <div className="border-t">
+            <div className={`${container} flex items-center justify-between gap-4 py-5 text-sm text-muted-foreground`}>
+              <p>© {new Date().getFullYear()} Sahil Pathan</p>
+              <a href="#home" className="inline-flex items-center gap-1 transition-colors hover:text-foreground">
+                Back to top <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+              </a>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} All rights reserved.
-          </p>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }
