@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { NAV } from "./site";
@@ -30,6 +30,20 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [active, setActive] = useState("");
   const closeMenu = () => setMenuOpen(false);
+  const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const [marker, setMarker] = useState<number | null>(null);
+
+  // Center the shared marker under the active link; re-measure when fonts or width change.
+  useLayoutEffect(() => {
+    const place = () => {
+      const link = linkRefs.current[active];
+      setMarker(link ? link.offsetLeft + link.offsetWidth / 2 : null);
+    };
+    place();
+    window.addEventListener("resize", place);
+    document.fonts?.ready.then(place);
+    return () => window.removeEventListener("resize", place);
+  }, [active]);
 
   // Highlight the nav item for the section in the middle of the viewport.
   useEffect(() => {
@@ -47,23 +61,31 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className={`${container} flex h-16 items-center justify-between`}>
-        <a href="#home" onClick={closeMenu} className="font-display text-lg font-bold tracking-[-0.02em]">
-          Sahil Pathan
-        </a>
-
-        <nav aria-label="Primary" className="hidden items-center gap-7 md:flex">
+    <header className="sticky top-0 z-50 bg-background">
+      <div className={`${container} relative flex h-16 items-center justify-end`}>
+        <nav
+          aria-label="Primary"
+          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-8 md:flex"
+        >
           {NAV.map((n) => (
             <a
               key={n.id}
+              ref={(el) => {
+                linkRefs.current[n.id] = el;
+              }}
               href={`#${n.id}`}
               aria-current={active === n.id ? "location" : undefined}
-              className={`text-sm transition-colors hover:text-foreground ${active === n.id ? "text-foreground" : "text-muted-foreground"}`}
+              className={`py-2 text-sm transition-colors hover:text-foreground ${active === n.id ? "text-foreground" : "text-muted-foreground"}`}
             >
               {n.label}
             </a>
           ))}
+          {/* One marker that glides between links, so the active section isn't shown by color alone */}
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute -bottom-0.5 left-0 h-[3px] w-4 rounded-full bg-primary transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${marker === null ? "opacity-0" : "opacity-100"}`}
+            style={{ transform: `translateX(${(marker ?? 0) - 8}px)` }}
+          />
         </nav>
 
         <div className="flex items-center gap-1">
